@@ -14,9 +14,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // load chats
-    window.chatLoader = new chatLoader()
-    console.log('Chat Loader is load in dom');
-    
-    window.chatLoader.init()                                                  
+    // window.chatLoader = new chatLoader()
+    // console.log('Chat Loader is load in dom');
+    // window.chatLoader.init()                                                  
 
 })

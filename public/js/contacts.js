@@ -1,12 +1,15 @@
 class contactLoader {
-    constructor(chatLoaderInstance) {
-        this.chatLoader = chatLoaderInstance
+    constructor() {
 
         this.contactList = document.getElementById('contactList')
         // console.log("🚀 ~ contactLoader ~ constructor ~ contactList:", this.contactList)
-
         if(!this.contactList){
             console.error('contactList not found')
+        }
+
+        this.conversation = document.getElementById('conversation')
+        if(!this.conversation){
+            console.error('conversation not found')
         }
     }
 
@@ -110,13 +113,25 @@ class contactLoader {
         // this.roomId = roomId
         // console.log("🚀 ~ contactLoader ~ openChat ~ this.roomId:", this.roomId)
 
-
         try{
             const res = await fetch(`/message/read/${this.receiverId}`)
-            const data = await res.json()
-            console.log("🚀 ~ contactLoader ~ openChat ~ data:", data)
+            const result = await res.json()
+            console.log("🚀 ~ contactLoader ~ openChat ~ result:", result)
     
-            this.renderChats(data.data)
+            // if here data --> undefined 
+
+            console.log('data.length :', result.data.length);
+            if(result.data.length === 0){
+                return chatBox.innerHTML = `
+                    <div class="text-center" style="margin-top:20px;">
+                        <p> “Start a conversation 👋 with ${user.name}"</p>
+                    </div> 
+                `
+            } 
+                console.log('Working else condition');  
+                this.renderChats(result.data)                
+            
+
     
         } catch(err){
             console.error('Error While recent-chat load', err)
@@ -125,23 +140,51 @@ class contactLoader {
     }
 
     renderChats(chats){
-    this.chatList.innerHTML = ""
+    this.conversation.innerHTML = ""
 
     chats.forEach(msg => {
         const chatDiv = document.createElement('div')
         chatDiv.classList.add("row", "message-body")
 
-        console.log("🚀 ~ chatLoader ~ renderChats ~ msg.sendeId:", msg.sendeId)
+        console.log("🚀 ~ chatLoader ~ renderChats ~ msg.senderId:", msg.senderId.id)
         console.log("🚀 ~ chatLoader ~ renderChats ~ currentUser.id:", currentUser.id)
-        const isSender = msg.senderId === currentUser.id
+        const isSender = msg.senderId.id === currentUser.id
 
-        console.log("msg in loadChat:", isSender);
+        console.log("who id msg sender :", isSender);
         
+
+    const renderContent = () => {
+
+        if (msg.messageType === 'text') {
+            return `<p>${msg.content}</p>`
+        }
+
+        if (msg.messageType === 'image') {
+            return `<img src="${msg.fileUrl}" width="200" style="border-radius:10px;" />`
+        }
+
+        if (msg.messageType === 'video') {
+            return `<video src="${msg.fileUrl}" controls width="200"></video>`
+        }
+
+        if (msg.messageType === 'audio') {
+            return `<audio src="${msg.fileUrl}" controls></audio>`
+        }
+
+        if (msg.messageType === 'document') {
+            return `<a href="${msg.fileUrl}" target="_blank"> ${msg.fileName}</a>`
+        }
+
+        return
+    }
+
+
+
         chatDiv.innerHTML = `
             <div class="col-sm-12 ${isSender ? 'message-main-sender' : 'message-main-receiver'}">
                 <div class="${isSender ? 'sender' : 'receiver'}">
                     <div class="message-text">
-                        ${msg.content}
+                        ${renderContent()}
                     </div>
                 </div>
             </div>
@@ -151,11 +194,14 @@ class contactLoader {
             //          ${new Date(chat.createdAt).toLocaleTimeString()}
             //    </span>
 
-        this.chatList.appendChild(chatDiv)
+        this.conversation.appendChild(chatDiv)
     })
 
-        // Auto scroll bottom
-        this.chatList.scrollTop = this.chatList.scrollHeight
+    // If I read chat need auto scroll 
+    // start with bottom and then top
+
+        this.conversation.scrollTop = this.conversation.scrollHeight
+
     }
 }
 

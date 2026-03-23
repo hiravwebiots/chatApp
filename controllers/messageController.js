@@ -36,22 +36,52 @@ const userModel = require('../models/userModel');
 
 // controllers/messageController.js
 
-const { sendMessageService } = require("../services/messageService");
-
 const sendMessage = async (req, res) => {
     console.log("API Called Here in messade send controller: ");
     
     try {
-        console.log("🚀 ~ sendMessage ~ req.currentUser:", req.session.user.id)
         const senderId = req.session.user.id;
-        console.log("req.body in message send api:", req.body);
+
+        const existSenderId = await userModel.findById(senderId)
+        if(!existSenderId){
+            return res.status(400).json({ status : 0, message : 'senderId not found' })
+        }
+        
         const { receiverId, content } = req.body;
-        console.log("req.body in message send ap :", req.body);
+        const existReceiverId = await userModel.findById(receiverId)
+        if(!existReceiverId){
+            return res.status(400).json({ status : 0, message : "receiverId not found" })
+        }
+
+        let messageType = 'text';
+        let fileUrl = undefined;
+        let fileName = undefined;
+
+
+
+        // file handling
+        if(req.file){
+            const file = req.file
+
+            // let messageType = 'file'
+
+            if(file.mimetype.startsWith('image')) messageType = 'image'
+            else if(file.mimetype.startsWith('video')) messageType = 'video'
+            else if(file.mimetype.startsWith('audio')) messageType = 'audio'
+            else messageType = 'document'
+
+            fileUrl = file.path
+            fileName = file.originalname
+        }   
+
 
         const message = await messageModel.create({
             senderId,
             receiverId,
-            content 
+            content : content || undefined,
+            fileUrl,
+            fileName,
+            messageType
         });
 
         console.log('Message Saved in DB');
@@ -64,13 +94,14 @@ const sendMessage = async (req, res) => {
         io.to(receiverId).emit('receive-message', message);
         io.to(senderId).emit('receive-message', message);
 
-
+        
         res.status(200).json({ status : 1, message : "message send successfully", data : message });
 
     } catch(err){
         console.log(err);
         res.status(500).json({ status : 0, message : "error while send message" })
-    }};
+    }
+};
 
 
 const readMessage = async(req, res) => {
@@ -170,7 +201,7 @@ const readMessagePersonalChat = async (req, res) => {
     console.log('call');
     
     try{
-        const loginUserId = req.user.id
+        const loginUserId = req.session.user.id
         const loginUser = await userModel.findById(loginUserId)
         if(!loginUser){
             return res.status(400).json({ status : 0, message : "you aren't found" })
@@ -250,12 +281,15 @@ const readMessagePersonalChat = async (req, res) => {
             return {
                 id : msg._id,
                 content : msg.content,
+                fileUrl : msg.fileUrl,
+                fileName : msg.fileName,
                 messageType : msg.messageType,
                 created_at : msg.created_at,
                 senderId : msg.senderId,
                 receiverId : msg.receiverId
             }
         })
+        console.log("🚀 ~ readMessagePersonalChat ~ formatData:", formatData)
 
         return res.status(200).json({ status : 1, message : "Read All Messages With me", data : formatData })
 
@@ -265,5 +299,33 @@ const readMessagePersonalChat = async (req, res) => {
     }
 }
 
-module.exports = { sendMessage, readMessage, readMessagePersonalChat}
+const getRecentChats = async (req, res) => {
+    try{
+        const loginUserId = req.session.user.id
+        const loginUser = await userModel.findById(loginUserId)
+        if(!loginUser){
+            return res.status(500).json({ status : 0, message : "error while get recent message " })
+        }
+
+        const chatWithUser = await messageModel.find({ 
+            $or :  [
+                { senderId : loginUserId },
+                { receiverId : loginUserId }
+            ]
+         })
+        console.log("🚀 ~ getRecentChats ~ chatWithUser:", chatWithUser)
+
+         if(!chatWithUser){
+            res.status(400).json({ status : 0, message : "no conversation with users" })
+         }
+
+         res.status(200).json({ status : 1, message : "get reccent users", data : chatWithUser })
+
+    } catch(err){
+        console.log(err);
+        res.status(500).json({ status : 0, message : 'error while recent-messages' })
+    }
+}
+
+module.exports = { sendMessage, readMessage, readMessagePersonalChat, getRecentChats}
 

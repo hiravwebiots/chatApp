@@ -1,12 +1,10 @@
-html,
-body,
-div,
-span {
+html, body {
   height: 100%;
-  width: 100%;
-  overflow: hidden;
-  padding: 0;
   margin: 0;
+  padding: 0;
+}
+
+div, span {
   box-sizing: border-box;
 }
 
@@ -448,7 +446,7 @@ body {
   margin: 2px !important;
   padding: 0 !important;
   width: auto;
-  height : 50px;
+  height : auto;
 }
 
 .message-main-receiver {
@@ -530,7 +528,7 @@ body {
   padding: 5px !important;
 }
 
-.reply-recording i {
+.reply-file {
   text-align: center;
   padding: 5px !important;
   color: #93918f;
@@ -549,11 +547,11 @@ body {
 }
 
 .reply-main {
-  padding: 2px 5px !important;
+  padding: 2px 2px !important;
 }
 
 .reply-main textarea {
-  width: 100%;
+  width: 90%;
   resize: none;
   overflow: hidden;
   padding: 5px !important;
@@ -651,7 +649,7 @@ body {
     margin: 0 !important;
     height: 100%;
     /*width: 100%;*/
-    border-left: 1px solid rgba(0, 0, 0, .08);
+    border-left: 1px solid rgba(165, 19, 19, 0.08);
     /*overflow-y: auto;*/
   }
   .message {

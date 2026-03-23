@@ -37,16 +37,16 @@
             <div class="col-sm-1 col-xs-1  heading-dot  pull-right">
               <i id="menuBtn" class="fa fa-ellipsis-v fa-2x  pull-right" aria-hidden="true"></i>
               <div id="dropdownMenu">
-                <div id="logoutBtn" style="padding:10px; cursor:pointer;">
+                <!-- <div id="logoutBtn" style="padding:10px; cursor:pointer;">
                   Logout
-                </div>
+                </div> -->
               </div>
             </div>
             
             <div class="col-sm-2 col-xs-2 heading-compose  pull-right">
-              <i id="dropdownMenu" class="fa fa-comments fa-2x  pull-right" aria-hidden="true"></i>
-                
+              <i id="dropdownMenu" class="fa fa-comments fa-2x  pull-right" aria-hidden="true"></i> 
             </div>
+            
           </div>
           <!-- Heading End -->
 
@@ -203,10 +203,10 @@
             <div class="col-sm-12 message-main-receiver">
               <div class="receiver">
                 <div class="message-text">
-                 <!-- Hyy, Its Awesome..! -->
+                 Hyy, Its Awesome..!
                 </div>
                 <span class="message-time pull-right">
-                  <!-- Sun -->
+                  Sun
                 </span>
               </div>
             </div>
@@ -216,10 +216,10 @@
             <div class="col-sm-12 message-main-sender">
               <div class="sender">
                 <div class="message-text">
-                  <!-- Thanks n I know its awesome...! -->
+                  Thanks n I know its awesome...!
                 </div>
                 <span class="message-time pull-right">
-                  <!-- Sun -->
+                  Sun
                 </span>
               </div>
             </div>
@@ -235,12 +235,25 @@
           <div class="col-sm-9 col-xs-9 reply-main">
             <textarea class="form-control" rows="1" id="messageInput" placeholder="Message"></textarea>
           </div>
-          <div class="col-sm-1 col-xs-1 reply-recording">
+          <!-- <div class="col-sm-1 col-xs-1 reply-recording">
             <i class="fa fa-microphone fa-2x" aria-hidden="true"></i>
+          </div> -->
+
+          <div class="col-sm-1 col-xs-1 reply-recording">
+            <label for="fileInput" style="cursor:pointer;">
+              <i class="fa fa-paperclip fa-2x"></i>
+            </label>
+            <input type="file" id="fileInput" style="display:none;">
           </div>
+
+
+
           <div class="col-sm-1 col-xs-1 reply-send">
-            <i id="sendBtn" class="fa fa-send fa-2x" aria-hidden="true"></i>
-          </div>
+                  <i id="sendBtn" class="fa fa-send fa-2x" aria-hidden="true"></i>
+                </div>
+
+
+      
         </div>
         <!-- Reply Box End -->
       </div>

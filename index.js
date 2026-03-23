@@ -3,6 +3,7 @@ require('dotenv').config()
 const session = require('express-session')
 const PORT = process.env.PORT
 require('./config/db')
+const MongoStore = require('connect-mongo').default
 
 // http Server
 const http = require('http')
@@ -32,7 +33,12 @@ app.use('/uploads', express.static('uploads'))
 app.use(session({
     secret : process.env.SESSION_SECRET,
     resave : false,
-    saveUninitialized : true,
+    saveUninitialized : false,
+    store : MongoStore.create({
+        mongoUrl : process.env.DB_URL,
+        collectionName : 'sessions',
+        autoRemove : 'native'
+    }),
     cookie: {
         maxAge: 1000 * 60 * 60 // 1 hour
     }
