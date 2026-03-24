@@ -52,11 +52,50 @@ sendBtn.addEventListener('click', async () => {
 
 
 
+
+function updateRecentChat(message) {
+  const sender = message.senderId?._id || message.senderId;
+  console.log("🚀 ~ updateRecentChat ~ sender:", sender)
+  const receiver = message.receiverId?._id || message.receiverId;
+  console.log("🚀 ~ updateRecentChat ~ receiver:", receiver)
+
+  // only process if message belongs to me
+  if (sender !== userId && receiver !== userId) return;
+
+// If I sent → other = receiver
+// If I received → other = sender
+  const otherUserId = sender === userId ? receiver : sender;
+  console.log("🚀 ~ updateRecentChat ~ otherUserId:", otherUserId)
+
+  const container = document.getElementById('chatList');
+
+  // “Find the HTML row (div) of this user in sidebar”
+  let chatRow = container.querySelector(`[data-user-id="${otherUserId}"]`);
+  console.log("🚀 ~ updateRecentChat ~ chatRow:", chatRow)
+
+  // preview text
+  let previewText = '';
+  if (message.messageType === 'text') previewText = message.content;
+  else if (message.messageType === 'image') previewText = '📷 Photo';
+  else if (message.messageType === 'video') previewText = '🎥 Video';
+  else if (message.messageType === 'audio') previewText = '🎵 Audio';
+  else if (message.messageType === 'document') previewText = '📄 Document';
+
+  // if exists → update + move top
+  if (chatRow) {
+    const msgDiv = chatRow.querySelector('.sideBar-message');
+    if (msgDiv) msgDiv.innerText = previewText;
+
+    // container.prepend(chatRow); // move to top
+  }
+}
+
 // Send Messahe APi Call and DB Store Message
 // Server emit message to Sender and reciver
 // here receive message just show in different UI
 socket.on('receive-message', (message) => {
-  
+    updateRecentChat(message);
+
   const loginChatUser = window.contactLoader.receiverId
 
   const sender = message.senderId?._id || message.senderId

@@ -1,6 +1,6 @@
 class contactLoader {
     constructor() {
-
+        this.chatList = document.getElementById('chatList')
         this.contactList = document.getElementById('contactList')
         // console.log("🚀 ~ contactLoader ~ constructor ~ contactList:", this.contactList)
         if(!this.contactList){
@@ -14,7 +14,26 @@ class contactLoader {
     }
 
     async init() {
-        await this.loadContacts()
+        await this.loadRecentChats()
+    }
+
+    async loadRecentChats(){
+        try{
+            const res = await fetch('/message/recent-chat')
+            const data = await res.json()
+            console.log("🚀 Recent Chat User of data", data)
+
+            console.log('Before Load Recent Contact : ');
+            
+            this.renderContacts(data.data, 'chat')
+            console.log("🚀 ~ contactLoader ~ loadRecentChats ~ data.data:", data.data)
+
+            console.log('After Load Recent Contact : ');
+
+
+        } catch(err){
+            console.error('error loading recent chats', err)
+        }
     }
 
     // Fetch user from API
@@ -23,26 +42,34 @@ class contactLoader {
             const res = await fetch('/profile/get') 
             const data = await res.json()
 
-            // console.log("API Data :", data);
+            console.log("🚀 Profile API Data :", data);
             
 
             // first data → whole response
             // second data → actual users array
-            this.renderContacts(data.data)     // .data come from API Response
+            this.renderContacts(data.data, 'contact')     // .data come from API Response
             // console.log("Render Contact in contact.js")
         } catch(err){
             console.error('Error loading contacts', err)
         }
     }   
 
-    renderContacts(users){
-        this.contactList.innerHTML = ""
+    renderContacts(users, type = 'chat'){
+        console.log('In renderContacts');
+                
+        const container = type === 'chat' ? this.chatList : this.contactList
+        console.log("🚀 ~ contactLoader ~ renderContacts ~ container:", container)
+
+        container.innerHTML = ""
 
         users.forEach(user => {
-            const contact = document.createElement("div");
-            contact.className = "row sideBar-body";
+            const div = document.createElement("div");
+            div.className = "row sideBar-body";
 
-            contact.innerHTML = `
+            // “Find user row by ID” → found instantly 
+            div.setAttribute("data-user-id", user.id);
+
+            div.innerHTML = `
                 <div class="col-sm-3 col-xs-3 sideBar-avatar">
                     <div class="avatar-icon">
                         <img src="/${user.profilePhoto}">
@@ -50,21 +77,22 @@ class contactLoader {
                 </div>
 
                 <div class="col-sm-9 col-xs-9 sideBar-main">
-                    <div class="row">
-                        <div class="col-sm-8 col-xs-8 sideBar-name">
-                            <span class="name-meta">
-                                ${user.name}
-                            </span>
-                        </div>
+                    <div class="sideBar-name name-meta">
+                        ${user.name}
                     </div>
-            </div>`
-
+                </div>
+                
+    <div class=" sideBar-message">
+        ${user.lastMessage?.content || ''}
+    </div>
+                `
+                // why use typr = chat
             
-            contact.addEventListener("click", () => {
+            div.addEventListener("click", () => {
                 this.openChat(user)
             })
 
-            this.contactList.appendChild(contact);
+            container.appendChild(div);
             // console.log("this.contactList", this.contactList)
         });
     }
@@ -120,7 +148,6 @@ class contactLoader {
     
             // if here data --> undefined 
 
-            console.log('data.length :', result.data.length);
             if(result.data.length === 0){
                 return chatBox.innerHTML = `
                     <div class="text-center" style="margin-top:20px;">

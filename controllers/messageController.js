@@ -276,7 +276,7 @@ const readMessagePersonalChat = async (req, res) => {
         .populate('senderId', ['profilePhoto', 'name', 'email', 'phone'])
         .populate('receiverId', ['profilePhoto', 'name', 'email', 'phone'])
         .sort({ created_at : 1 }) // 1 old → new  || -1 new → old
-
+                
         const formatData = messages.map((msg) => {
             return {
                 id : msg._id,
@@ -286,7 +286,16 @@ const readMessagePersonalChat = async (req, res) => {
                 messageType : msg.messageType,
                 created_at : msg.created_at,
                 senderId : msg.senderId,
-                receiverId : msg.receiverId
+                receiverId : msg.receiverId,
+                lastMessage : undefined  
+                // {
+                //     content: msg.content ,
+                //     messageType: msg.messageType,
+                //     created_at: msg.created_at,
+                //     fileUrl: msg.fileUrl || null,
+                //     fileName: msg.fileName || null
+                // }
+
             }
         })
         console.log("🚀 ~ readMessagePersonalChat ~ formatData:", formatData)
@@ -299,33 +308,71 @@ const readMessagePersonalChat = async (req, res) => {
     }
 }
 
+
+
+
 const getRecentChats = async (req, res) => {
-    try{
-        const loginUserId = req.session.user.id
-        const loginUser = await userModel.findById(loginUserId)
-        if(!loginUser){
-            return res.status(500).json({ status : 0, message : "error while get recent message " })
+    try {
+        const loginUserId = req.session.user.id;
+
+        const loginUser = await userModel.findById(loginUserId);
+        if (!loginUser) {
+            return res.status(500).json({ status: 0, message: "User not found" });
         }
 
-        const chatWithUser = await messageModel.find({ 
-            $or :  [
-                { senderId : loginUserId },
-                { receiverId : loginUserId }
+        const messages = await messageModel.find({
+            $or: [
+                { senderId: loginUserId },
+                { receiverId: loginUserId }
             ]
-         })
-        console.log("🚀 ~ getRecentChats ~ chatWithUser:", chatWithUser)
+        })
+        .populate('senderId', ['profilePhoto', 'name', 'email'])
+        .populate('receiverId', ['profilePhoto', 'name', 'email'])
+        .sort({ created_at: -1 }); // latest first
 
-         if(!chatWithUser){
-            res.status(400).json({ status : 0, message : "no conversation with users" })
-         }
+        if (!messages.length) {
+            return res.status(200).json({ status: 1, message: "No chats yet", data: [] });
+        }
 
-         res.status(200).json({ status : 1, message : "get reccent users", data : chatWithUser })
+        const uniqueUsers = new Map();
 
-    } catch(err){
+        messages.forEach(msg => {
+            const isSender = msg.senderId._id.toString() === loginUserId;
+            const otherUser = isSender ? msg.receiverId : msg.senderId;
+
+            const userId = otherUser._id.toString();
+            console.log("🚀 ~ getRecentChats ~ userId:", userId)
+
+            // only take FIRST message (latest due to sorting)
+            // only get latest first if second it's not store
+            if (!uniqueUsers.has(userId)) {
+                uniqueUsers.set(userId, {
+                        id: otherUser.id,
+                        name: otherUser.name,
+                        email: otherUser.email,
+                        profilePhoto: otherUser.profilePhoto,
+                        lastMessage: {
+                            content: msg.content,
+                            messageType: msg.messageType,
+                            created_at: msg.created_at,
+                            fileUrl: msg.fileUrl || null,
+                            fileName: msg.fileName || null
+                        }
+                });
+            }
+        });
+
+        // convert Map → Array
+        const result = Array.from(uniqueUsers.values());
+        console.log("🚀 ~ getRecentChats ~ result:", result)
+
+        res.status(200).json({ status: 1, message: "Recent chats fetched", data: result });
+
+    } catch (err) {
         console.log(err);
-        res.status(500).json({ status : 0, message : 'error while recent-messages' })
+        res.status(500).json({ status: 0, message: 'error while recent-messages' });
     }
-}
+};
 
-module.exports = { sendMessage, readMessage, readMessagePersonalChat, getRecentChats}
+module.exports = { sendMessage, readMessage, readMessagePersonalChat, getRecentChats }
 

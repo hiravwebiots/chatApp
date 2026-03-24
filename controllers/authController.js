@@ -79,25 +79,73 @@ const register = async(req, res) => {
     }
 }
 
+// const login = async(req, res) => {
+//     try{
+//         let { email, password } = req.body
+
+//         if(!email || !password){
+//             // return res.render('pages/auth/login', { error : "email and password required" })
+//             return res.status(400).json({ status : 0, message : "email and password required"})
+//         }
+        
+//         const user = await userModel.findOne({ email })
+//         if(!user){
+//             // return res.render('pages/auth/login', { error : "User not found, email invalid" });
+//             return res.status(404).json({ status : 0, message: "User not found, email invalid"});
+//         }
+        
+//         const matchPass = await bcrypt.compare(password, user.password)
+//         if(!matchPass){
+//             // return res.render('pages/auth/login', { error : "Invalid password" });
+//             return res.status(400).json({ status : 0, message : "Invalid password" })
+//         }
+
+//         user.password = undefined
+
+//         const tokenObj = {
+//             id : user.id,
+//             name : user.name,
+//             email : user.email
+//        }
+//         const token = jwt.sign(tokenObj, process.env.SECRET, {expiresIn : '7d'})
+
+//         req.session.user = { 
+//             id : user.id,
+//             name : user.name,
+//             email : user.email,
+//             profilePhoto : user.profilePhoto
+//         }
+//         console.log("🚀 ~ loginUser ~ req.session.user:", req.session.user)
+
+//         // res.redirect('/dashboard')
+//         res.status(201).json({ status : 1, message: "Login successful", token, data : user });
+
+//     } catch(err){
+//         console.log(err);
+//         // res.render('pages/auth/login', { error : "error while login user" });
+//         res.status(500).send({ status : 0, message : "error while login user" })
+//     }
+// }
+
 const login = async(req, res) => {
     try{
         let { email, password } = req.body
 
         if(!email || !password){
-            // return res.render('pages/auth/login', { error : "email and password required" })
-            return res.status(400).json({ status : 0, message : "email and password required"})
+            return res.render('pages/auth/login', { error : "email and password required" })
+            // return res.status(400).json({ status : 0, message : "email and password required"})
         }
         
         const user = await userModel.findOne({ email })
         if(!user){
-            // return res.render('pages/auth/login', { error : "User not found, email invalid" });
-            return res.status(404).json({ status : 0, message: "User not found, email invalid"});
+            return res.render('pages/auth/login', { error : "User not found, email invalid" });
+            // return res.status(404).json({ status : 0, message: "User not found, email invalid"});
         }
         
         const matchPass = await bcrypt.compare(password, user.password)
         if(!matchPass){
-            // return res.render('pages/auth/login', { error : "Invalid password" });
-            return res.status(400).json({ status : 0, message : "Invalid password" })
+            return res.render('pages/auth/login', { error : "Invalid password" });
+            // return res.status(400).json({ status : 0, message : "Invalid password" })
         }
 
         user.password = undefined
@@ -117,13 +165,13 @@ const login = async(req, res) => {
         }
         console.log("🚀 ~ loginUser ~ req.session.user:", req.session.user)
 
-        // res.redirect('/dashboard')
-        res.status(201).json({ status : 1, message: "Login successful", token, data : user });
+        res.redirect('/dashboard')
+        // res.status(201).json({ status : 1, message: "Login successful", token, data : user });
 
     } catch(err){
         console.log(err);
-        // res.render('pages/auth/login', { error : "error while login user" });
-        res.status(500).send({ status : 0, message : "error while login user" })
+        res.render('pages/auth/login', { error : "error while login user" });
+        // res.status(500).send({ status : 0, message : "error while login user" })
     }
 }
 

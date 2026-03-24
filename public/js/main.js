@@ -12,10 +12,10 @@ document.addEventListener("DOMContentLoaded", () => {
         myImg.src = `/${currentUser.profilePhoto}`;
         // console.log("🚀 ~ myImg.src:", myImg.src)
     }
-
-    // load chats
-    // window.chatLoader = new chatLoader()
-    // console.log('Chat Loader is load in dom');
-    // window.chatLoader.init()                                                  
-
+    
 })
+        // load chats
+        // window.chatLoader = new chatLoader()
+        // console.log('Chat Loader is load in dom');
+        // window.chatLoader.init()                                                  
+    

@@ -13,8 +13,17 @@ function openTab(evt, tabName) {
     // show selected list
     if (tabName === "chat") {
         document.getElementById("chatList").style.display = "block";
+        
+        console.log('Working Chat Tab');
+        window.contactLoader.loadRecentChats()
+        
+
     } else {
         document.getElementById("contactList").style.display = "block";
+
+                console.log('Working Contact Tab');
+
+        window.contactLoader.loadContacts()        
     }
 
     // active tab style

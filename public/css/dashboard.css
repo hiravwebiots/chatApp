@@ -620,18 +620,30 @@ body {
     width: 55px;
   }
   .sideBar-main {
-    padding: 0 !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
   }
   .sideBar-main .row {
     padding: 0 !important;
     margin: 0 !important;
   }
   .sideBar-name {
-    padding: 10px 5px !important;
+  padding: 0 !important;
+  margin-bottom: 3px;
+  }
+  .sideBar-message {
+    font-size: 10px;
+    color: #777;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .name-meta {
-    font-size: 16px;
-    padding: 5% !important;
+    font-size: 15px;
+    font-weight: 600;
+    color: #000;
   }
   .sideBar-time {
     padding: 10px !important;
