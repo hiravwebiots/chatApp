@@ -57,8 +57,6 @@ const sendMessage = async (req, res) => {
         let fileUrl = undefined;
         let fileName = undefined;
 
-
-
         // file handling
         if(req.file){
             const file = req.file
@@ -86,7 +84,7 @@ const sendMessage = async (req, res) => {
 
         console.log('Message Saved in DB');
         
-
+        // socket.io event call here
         // // GET IO INSTANCE
         const io = req.app.get('io');
 
@@ -102,7 +100,6 @@ const sendMessage = async (req, res) => {
         res.status(500).json({ status : 0, message : "error while send message" })
     }
 };
-
 
 const readMessage = async(req, res) => {
     try{
@@ -308,9 +305,6 @@ const readMessagePersonalChat = async (req, res) => {
     }
 }
 
-
-
-
 const getRecentChats = async (req, res) => {
     try {
         const loginUserId = req.session.user.id;
@@ -341,7 +335,7 @@ const getRecentChats = async (req, res) => {
             const otherUser = isSender ? msg.receiverId : msg.senderId;
 
             const userId = otherUser._id.toString();
-            console.log("🚀 ~ getRecentChats ~ userId:", userId)
+            // console.log("🚀 ~ getRecentChats ~ userId:", userId)
 
             // only take FIRST message (latest due to sorting)
             // only get latest first if second it's not store

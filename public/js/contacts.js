@@ -82,12 +82,12 @@ class contactLoader {
                     </div>
                 </div>
                 
-    <div class=" sideBar-message">
-        ${user.lastMessage?.content || ''}
-    </div>
+            <div class=" sideBar-message">
+                ${user.lastMessage?.content || ''}
+            </div>
                 `
-                // why use typr = chat
-            
+                
+            // why use typr = chat
             div.addEventListener("click", () => {
                 this.openChat(user)
             })

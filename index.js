@@ -55,6 +55,7 @@ app.use('/user', require('./routes/authRoutes'))
 app.use('/message', require('./routes/messageRoutes'))
 app.use('/profile', require('./routes/profileRoutes'))
 
+
 server.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 })

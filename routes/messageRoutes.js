@@ -10,4 +10,5 @@ routes.get('/read/:id', checkSession, readMessagePersonalChat)
 routes.get('/recent-chat', checkSession, getRecentChats)
 
 
+
 module.exports = routes

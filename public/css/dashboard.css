@@ -670,6 +670,12 @@ body {
   .reply {
     height: 70px;
   }
+  .typingIndicator{
+    padding: 5px 15px;
+    font-size: 13px;
+    color: #888;
+    height: 20px;
+  }
   .reply-emojis {
     padding: 5px 0 !important;
   }

@@ -16,6 +16,19 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+
+
+        <script src="/js/dashboard.js" defer></script>
+        <script src="/js/main.js" defer></script>
+        <script src="/js/contactChatTab.js" defer></script> 
+        <script src="/js/contacts.js" defer></script>
+        <script src="/socket.io/socket.io.js" defer></script>
+        <script src="/js/chatLoad.js" defer></script>
+        <script src="/js/chat.js" defer></script>
+
+
+
 </head>
 
 <body>
@@ -92,7 +105,7 @@
                         </div>
                         <div class="col-sm-4 col-xs-4 sideBar-time">
                           <span class="time-meta pull-right">18:18</span>
-                        </div>
+                        </div>a
                       </div>
                     </div>
                   </div> -->
@@ -222,9 +235,18 @@
                 </span>
               </div>
             </div>
-          </div>
+          </div>  
         </div>
         <!-- Message Box End -->
+        
+        
+        
+          <div id="typingIndicator" class="typingIndicator">
+
+          </div>
+
+
+
 
         <!-- Reply Box -->
         <div class="row reply">
@@ -246,10 +268,9 @@
           </div>
 
 
-
           <div class="col-sm-1 col-xs-1 reply-send">
-                  <i id="sendBtn" class="fa fa-send fa-2x" aria-hidden="true"></i>
-                </div>
+              <i id="sendBtn" class="fa fa-send fa-2x" aria-hidden="true"></i>
+          </div>
 
 
       
@@ -270,7 +291,6 @@
           console.log('~dashboard ~ userId', userId);
         </script>
 
-        <%- include('../partials/footer') %>
 
         <script>
           const currentUser = JSON.parse('<%- JSON.stringify(currentUser || {}) %>');
@@ -279,14 +299,9 @@
           // console.log("currentUser PHOTO VALUE:", currentUser.profilePhoto);
         </script>
 
-        <script src="/js/dashboard.js"></script>
-        <!-- Toggele Class -->
-        <script src="/js/contactChatTab.js"></script>
-        <script src="/js/main.js"></script>
-        <script src="/js/chatLoad.js"></script>
-        <script src="/js/contacts.js"></script>
-        
-
 </body>
+
+
+
 
 </html>

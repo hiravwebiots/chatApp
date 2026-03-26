@@ -10,6 +10,7 @@ const initSocket = (io) => {
     io.on('connection', async(socket) => {
         console.log('user connected', socket.id);
         
+
         // create connection -> join room
         // user login then create this room
         socket.on('join-room', async (userId) => {
@@ -48,11 +49,28 @@ const initSocket = (io) => {
                 // join personal room
                 socket.join(userId)
                 console.log(`user ${userId} joined Personal room`); 
+
+
             } catch(err){
                 console.error('Error While join room', err)
             }
         })
 
+        // typing event
+        socket.on('typing', async({senderId, receiverId}) => {
+            console.log('typing event started from server');
+
+            // send typing event to receiver
+            socket.to(receiverId).emit('displayTyping', {
+                senderId
+            })
+        })
+
+        socket.on('stop-typing', ({ senderId, receiverId }) => {
+            socket.to(receiverId).emit('hide_typing', {
+                senderId
+            });
+        });
 
         // // Send Message & Store 
         // socket.on('send-message', async (data) => {

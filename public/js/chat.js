@@ -1,16 +1,78 @@
+// Add these at the top of chat.js
 const socket = io()
 
 // It's Login User
 console.log("Frontend Login userId:", userId, userId.length);
 
 
-// JOIN ROOM from frontend
-// It's Login User Room
+// It's Login User Join Room
 socket.emit('join-room', userId)
 
+const conversation = document.getElementById('conversation');
 const message = document.getElementById('messageInput')
 const fileInput = document.getElementById('fileInput')
 const sendBtn = document.getElementById('sendBtn')
+
+// typing
+let typingTimeout
+
+message.addEventListener('input', () => {
+    const receiverId = window.contactLoader.receiverId
+    if(!receiverId) return
+
+    // emit typing
+    socket.emit('typing', { 
+      senderId : userId,
+      receiverId
+     })
+
+    // clear previous timout
+    clearTimeout(typingTimeout)
+
+    // stop typing evnt after 8s
+    typingTimeout = setTimeout(() => {
+      socket.emit('stop-typing', { 
+        senderId : userId,
+        receiverId
+       })
+    }, 1000)
+})
+
+let typingDisplayTimeout
+
+// show typing
+socket.on('displayTyping', ({ senderId }) => {
+
+  console.log('event recieve');
+  
+  const currentChatUser = window.contactLoader.receiverId
+  
+  if(senderId !== currentChatUser) return
+  
+  const typingIndicator = document.getElementById('typingIndicator')
+
+  if(!typingIndicator){ 
+    console.log('typingIndicator not found' );  
+    return
+  }
+
+  console.log("🚀 ~ typingIndicator After Condition:", typingIndicator)
+
+  typingIndicator.innerHTML = '<p> typing... </p>'
+// typingIndicator.style.display = 'block'
+
+})
+
+// hide typing
+socket.on('hide_typing', ({ senderId }) => {
+    const currentChatUser = window.contactLoader.receiverId
+
+    if(senderId === currentChatUser){
+        typingIndicator.innerHTML = ''
+    }
+}) 
+
+
 
 // send Btn Click
 sendBtn.addEventListener('click', async () => {
@@ -51,8 +113,6 @@ sendBtn.addEventListener('click', async () => {
 })
 
 
-
-
 function updateRecentChat(message) {
   const sender = message.senderId?._id || message.senderId;
   console.log("🚀 ~ updateRecentChat ~ sender:", sender)
@@ -90,6 +150,7 @@ function updateRecentChat(message) {
   }
 }
 
+
 // Send Messahe APi Call and DB Store Message
 // Server emit message to Sender and reciver
 // here receive message just show in different UI
@@ -102,7 +163,6 @@ socket.on('receive-message', (message) => {
   const receiver = message.receiverId?._id || message.receiverId
   
   
-  
   // Ignore message not login user
   if (sender !== loginChatUser && receiver !== loginChatUser) return
   
@@ -113,7 +173,7 @@ socket.on('receive-message', (message) => {
   console.log("🚀 ~ message Before renderContent:", message)
   
 
-  // If Message Sender is login user then senderUI Print
+  // If Message Sender is login user then senderUI Print in conversation area
   // else Message sender is click user then receiverUI Print
   const renderContent = () => {
 
@@ -161,7 +221,8 @@ socket.on('receive-message', (message) => {
       `
     const isNearBottom = conversation.scrollTop + conversation.clientHeight >= conversation.scrollHeight - 50;
 
-  conversation.innerHTML += messageHTML;
+    // conversation.insertAdjacentHTML('beforeend', messageHTML);
+    conversation.innerHTML += messageHTML;
 
   if (isNearBottom) {
     conversation.scrollTop = conversation.scrollHeight;
