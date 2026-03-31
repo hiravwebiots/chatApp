@@ -103,7 +103,7 @@ const sendMessage = async (req, res) => {
 
 const readMessage = async(req, res) => {
     try{
-        const userId = req.user.id
+        const userId = req.session.user.id
         console.log("🚀 ~ readMessage ~ senderId:", userId)
 
         const user = await userModel.findById(userId)

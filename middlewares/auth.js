@@ -10,7 +10,7 @@ const checkAuth = (req, res, next) => {
         
         const verify = jwt.verify(token, process.env.SECRET)
         req.user = verify
-        console.log("🚀 ~ checkAuth ~ req.user:", req.user)
+        // console.log("🚀 ~ checkAuth ~ req.user:", req.user)
         
         next()
 
@@ -24,7 +24,7 @@ const checkAuth = (req, res, next) => {
 
 const checkSession = (req, res, next) => {
     try{    
-        console.log("🚀 ~ checkSession ~ req.session.user:", req.session.user)
+        // console.log("🚀 ~ checkSession ~ req.session.user:", req.session.user)
         if(req.session && req.session.user){
             return next()
         } else{
@@ -38,7 +38,7 @@ const checkSession = (req, res, next) => {
 
 const checkIsLoggedIn = (req, res, next) => {
     try {
-        console.log("🚀 ~ isLoggedIn ~ req.session.user:", req.session.user)
+        // console.log("🚀 ~ isLoggedIn ~ req.session.user:", req.session.user)
         if(req.session.user) {
             // Already logged in → go to dashboard
             return res.redirect('/dashboard')

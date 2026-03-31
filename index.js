@@ -54,6 +54,7 @@ app.use('/', require('./routes/ejsRoutes'))
 app.use('/user', require('./routes/authRoutes'))
 app.use('/message', require('./routes/messageRoutes'))
 app.use('/profile', require('./routes/profileRoutes'))
+app.use('/call', require('./routes/callRoutes'))
 
 
 server.listen(PORT, () => {
