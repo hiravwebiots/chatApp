@@ -101,6 +101,7 @@ const sendMessage = async (req, res) => {
     }
 };
 
+// not use this
 const readMessage = async(req, res) => {
     try{
         const userId = req.session.user.id

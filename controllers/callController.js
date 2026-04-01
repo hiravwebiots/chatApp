@@ -54,10 +54,21 @@ const initiateCall = async (req, res) => {
 
         await callParticipantModel.insertMany(participants)
 
+        // get IO Instance
+        const io = req.app.get('io')
+        
+        // emit to both user
+        io.to(receiverId).emit('call-incoming', {
+            callId : call.id,
+            callerId : initiatorId, 
+            callType : callType
+        })
+
 
         setTimeout(async () => {
             try{
                 const latestCall = await callModel.findById(call.id)
+                // console.log("🚀 ~ initiateCall ~ latestCall:", latestCall)
 
                 // If already ended → skip
                 if(!latestCall || latestCall.status !== 'active') return
@@ -67,12 +78,13 @@ const initiateCall = async (req, res) => {
                     callId : call.id,
                     userId : receiverId,
                 }) 
+                // console.log("🚀 ~ initiateCall ~ latestParticipant:", latestParticipant)
 
                 // if receiver already joined -> skip
                 if (latestParticipant.status === 'joined') return
 
                 // if not joined → mark missed
-                if(!latestParticipant){    
+                if(latestParticipant){
                     await callModel.findByIdAndUpdate(call.id, {
                         status : 'ended',
                         endedAt : new Date(),
@@ -94,7 +106,7 @@ const initiateCall = async (req, res) => {
             } catch(err){
                 console.error('error in unanswered call timeout', err)
             }
-        }, 120000)
+        }, 45000)
 
         res.status(200).json({ status : 1, message : 'Successfully initiate Call', data : call })
 
@@ -152,7 +164,14 @@ const answerCall = async(req, res) => {
         call.acceptedTime = new Date()
         await call.save()
 
-        return res.status(200).json({ status : 1, message : 'call answerd suceessfully', data : call})
+        // socket
+        const io = req.app.get('io')
+
+        io.to(call.initiatorId.toString()).emit('call-accepted',{
+            callId
+        })
+
+        res.status(200).json({ status : 1, message : 'call answerd suceessfully', data : call})
 
     } catch(err){
         console.log(err);
@@ -219,6 +238,13 @@ const declineCall = async (req, res) => {
         call.status = 'ended'
         await call.save()
 
+        // socket
+        const io = req.app.get('io')
+        
+        io.to(call.initiatorId.toString()).emit('call-declined', {
+            callId
+        })
+
         res.status(200).json({ status : 1, message : 'Successfully declined Call', data : call })
         
     } catch(err){   
@@ -238,24 +264,73 @@ const endCall = async (req, res) => {
         const call = await callModel.findById(callId)
         if(!call) return res.status(404).json({ status : 0, message : 'call not found' })
 
+
+        // caller cancels befor pickup
+        if(call.status === 'active' && !call.acceptedTime && call.initiatorId.toString() === userId) {
+            await callModel.findByIdAndUpdate(
+                callId, 
+                { status : 'ended', endedAt : new Date() }
+            )
+
+            // socket 
+            const io = req.app.get('io')
+
+            io.to(receiverId.toString()).emit('call-ended', { callId })
+
+            return res.status(200).json({ status : 1, message : 'call cancelled by caller' })
+        }
+
+        
         const participant = await callParticipantModel.findOne({ callId : call.id, userId : userId })
         if(!participant) return res.status(403).json({ status : 0, message : 'you are not part of this call' })
 
+        // If already ended
         if(call.status === 'ended'){
-            return res.json({ status : 0, message : 'call already ended', duration : call.duration || 0 })
+            return res.json({ status : 1, message : 'call already ended', duration : call.duration || 0 })
         }
 
+        // participant is left
         if(participant.status === 'joined'){
-            return await callParticipantModel.findByIdAndUpdate(
-                { callId : call.id, userId : userId },
+            await callParticipantModel.findByIdAndUpdate(
+                participant.id,
                 { status : 'left', leftAt : new Date() }
             )
         }
 
+        // Check remaining participants
+        const remainingJoined = await callParticipantModel.countDocuments({ callId : call.id, status : 'joined' })
+        // console.log("🚀 ~ endCall ~ activeParticipants:", remainingJoined)
 
+        // If 1 or 0 Participant left → end call
+        if(remainingJoined <= 1){
+            const endTime = new Date()
 
+            const duration = call.acceptedTime
+                ? Math.floor((endTime - call.acceptedTime) / 1000 ) // in second
+                : 0;
 
+            await callModel.findByIdAndUpdate(callId, {
+                status : 'ended',
+                endedAt : endTime,
+                duration : duration
+            })
 
+            await callParticipantModel.updateMany(
+                { callId : call.id, status : 'joined' },
+                { status : 'left', leftAt : endTime }
+            )
+    
+            // socket
+            const io = req.app.get('io')
+
+            io.to(call.initiatorId.toString()).emit('call-ended', {callModel})
+            io.to(call.receiverId.toString()).emit('call-ended', {callModel})
+
+            return res.status(200).json({ status : 1, message : 'Successfully Call ended', duration : duration })
+        }
+    
+        // If others still in call
+        return res.json({ status : 1, message : 'you left the call' })   // fix
 
     } catch(err){
         console.log(err);

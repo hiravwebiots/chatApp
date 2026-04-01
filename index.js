@@ -8,7 +8,7 @@ const MongoStore = require('connect-mongo').default
 // http Server
 const http = require('http')
 const { Server } = require('socket.io')
-const initSocket = require('./socket/messageSocket')
+const initSocket = require('./socket/index')
 
 const app =express()
 const server = http.createServer(app)

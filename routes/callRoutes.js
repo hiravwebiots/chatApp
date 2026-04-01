@@ -6,7 +6,7 @@ const routes = express()
 routes.post('/initiate', checkAuth, initiateCall)
 routes.post('/answer', checkAuth, answerCall)
 routes.post('/decline', checkAuth, declineCall)
-routes.get('/end', checkAuth, endCall)
+routes.post('/end', checkAuth, endCall)
 
 // getCall History
 
