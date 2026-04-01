@@ -4,7 +4,7 @@ const callModel = require('../models/callModel');
 
 const initiateCall = async (req, res) => {
     try{
-        const initiatorId = req.user.id
+        const initiatorId = req.session.user.id
 
         const initiator = await userModel.findById(initiatorId)
         if(!initiator){
@@ -101,12 +101,15 @@ const initiateCall = async (req, res) => {
                         { $set: { status: 'not answered' } }
                     )
 
+                    io.to(call.initiatorId.toString()).emit('call-timeout', { callId : call.id })
+                    io.to(call.receiverId.toString()).emit('call-timeout', { callId : call.id })
+
                     console.log('call Time Out Missed Call');
                 }   
             } catch(err){
                 console.error('error in unanswered call timeout', err)
             }
-        }, 45000)
+        }, 20000)
 
         res.status(200).json({ status : 1, message : 'Successfully initiate Call', data : call })
 
@@ -118,7 +121,7 @@ const initiateCall = async (req, res) => {
 
 const answerCall = async(req, res) => {
     try{
-        const receiverId = req.user.id
+        const receiverId = req.session.user.id
 
         const receiver = await userModel.findById(receiverId)
         if(!receiver){    
@@ -181,7 +184,7 @@ const answerCall = async(req, res) => {
 
 const declineCall = async (req, res) => {
     try{
-        const receiverId = req.user.id
+        const receiverId = req.session.user.id
 
         const receiver = await userModel.findById(receiverId)
         if(!receiver){
@@ -255,7 +258,7 @@ const declineCall = async (req, res) => {
 
 const endCall = async (req, res) => {
     try{    
-        const userId = req.user.id
+        const userId = req.session.user.id
         if(!userId) return res.status(400).json({ status : 0, message : 'user not fouund' })
 
         const { callId } = req.body
@@ -275,7 +278,7 @@ const endCall = async (req, res) => {
             // socket 
             const io = req.app.get('io')
 
-            io.to(receiverId.toString()).emit('call-ended', { callId })
+            io.to(call.receiverId.toString()).emit('call-ended', { callId })
 
             return res.status(200).json({ status : 1, message : 'call cancelled by caller' })
         }
@@ -323,8 +326,8 @@ const endCall = async (req, res) => {
             // socket
             const io = req.app.get('io')
 
-            io.to(call.initiatorId.toString()).emit('call-ended', {callModel})
-            io.to(call.receiverId.toString()).emit('call-ended', {callModel})
+            io.to(call.initiatorId.toString()).emit('call-ended', { callId })
+            io.to(call.receiverId.toString()).emit('call-ended', { callId })
 
             return res.status(200).json({ status : 1, message : 'Successfully Call ended', duration : duration })
         }

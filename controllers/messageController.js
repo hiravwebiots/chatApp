@@ -296,7 +296,7 @@ const readMessagePersonalChat = async (req, res) => {
 
             }
         })
-        console.log("🚀 ~ readMessagePersonalChat ~ formatData:", formatData)
+        // console.log("🚀 ~ readMessagePersonalChat ~ formatData:", formatData)
 
         return res.status(200).json({ status : 1, message : "Read All Messages With me", data : formatData })
 
@@ -359,7 +359,7 @@ const getRecentChats = async (req, res) => {
 
         // convert Map → Array
         const result = Array.from(uniqueUsers.values());
-        console.log("🚀 ~ getRecentChats ~ result:", result)
+        // console.log("🚀 ~ getRecentChats ~ result:", result)
 
         res.status(200).json({ status: 1, message: "Recent chats fetched", data: result });
 

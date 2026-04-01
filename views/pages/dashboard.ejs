@@ -26,6 +26,7 @@
         <script src="/socket.io/socket.io.js" defer></script>
         <script src="/js/chatLoad.js" defer></script>
         <script src="/js/chat.js" defer></script>
+        <script src="/js/call.js" defer></script>
 
 
 
@@ -45,20 +46,25 @@
                 <img id="myImageId" src="<currentUser.profilePhoto>">    
               </div>
             </div>
+            
+            <div>
+              <h4> <b><%= currentUser.name %></b> </h4>
+            </div>
+
 
             <!-- Menu For Setting -->
-            <div class="col-sm-1 col-xs-1  heading-dot  pull-right">
+            <!-- <div class="col-sm-1 col-xs-1  heading-dot  pull-right">
               <i id="menuBtn" class="fa fa-ellipsis-v fa-2x  pull-right" aria-hidden="true"></i>
               <div id="dropdownMenu">
-                <!-- <div id="logoutBtn" style="padding:10px; cursor:pointer;">
+                <div id="logoutBtn" style="padding:10px; cursor:pointer;">
                   Logout
-                </div> -->
+                </div>
               </div>
             </div>
             
             <div class="col-sm-2 col-xs-2 heading-compose  pull-right">
               <i id="dropdownMenu" class="fa fa-comments fa-2x  pull-right" aria-hidden="true"></i> 
-            </div>
+            </div> -->
             
           </div>
           <!-- Heading End -->
@@ -191,23 +197,38 @@
 
       <!-- Conversation Start -->
       <div class="col-sm-8 conversation">
+
+      <!-- <div id="welcomeScreen" class="welcome-screen">
+        <h2>Conversation Chat App</h2>
+        <p>Select a user to start chatting</p>
+      </div> -->
+
+
         <!-- Heading -->
         <div class="row heading">
           <div class="col-sm-2 col-md-1 col-xs-3 heading-avatar">
-            <div class="heading-avatar-icon">
-              <img src="<user.profilePhoto>">            
-            </div>
-          </div>
-          <div class="col-sm-8 col-xs-7 heading-name">
-            <a class="heading-name-meta">Ankit Jain
-            </a>
-            <span class="heading-online">Online</span>
-          </div>
-          <div class="col-sm-1 col-xs-1  heading-dot pull-right">
-            <i class="fa fa-ellipsis-v fa-2x  pull-right" aria-hidden="true"></i>
-          </div>
+          <div class="heading-avatar-icon">
+          <img src="<user.profilePhoto>">            
         </div>
-        <!-- Heading End -->
+        </div>
+
+        <div class="col-sm-7 col-xs-6 heading-name">
+          <a class="heading-name-meta">Ankit Jain</a>
+          <span class="heading-online">Online</span>
+        </div>
+
+        <!-- Call Icons -->
+        <div class="heading-call">
+          <i class="fa fa-phone fa-2x call-icon"></i>
+          <i class="fa fa-video-camera fa-2x call-icon"></i>
+        </div>
+
+        <!-- 3-dot menu -->
+        <!-- <div class="col-sm-2 col-xs-3 heading-dot">
+            <i class="fa fa-ellipsis-v fa-2x pull-right"></i>
+        </div> -->
+      </div>
+      <!-- Heading End -->
 
         <!-- Message Box -->
         <div class="row message" id="conversation">
@@ -239,11 +260,16 @@
         </div>
         <!-- Message Box End -->
         
-        
-        
-          <div id="typingIndicator" class="typingIndicator">
+        <div id="incomingCallUI" class="incoming-call-ui">
+          <p id="callerText">Incoming Call...</p>
+          <button id="acceptBtn" class="btn btn-success">Accept</button>
+          <button id="declineBtn" class="btn btn-danger">Decline</button>
+        </div>
+ 
+        <!-- typing Indicator -->
+        <div id="typingIndicator" class="typingIndicator">
 
-          </div>
+        </div>
 
 
 
@@ -298,6 +324,31 @@
           // console.log("currentUser FULL OBJECT:", currentUser);
           // console.log("currentUser PHOTO VALUE:", currentUser.profilePhoto);
         </script>
+
+
+        <!-- Incoming Call Popup -->
+        <div id="incomingCallUI" class="incoming-call-ui">
+          <p id="callerText">Incoming Call...</p>
+          <button id="acceptBtn" class="btn btn-success">Accept</button>
+          <button id="declineBtn" class="btn btn-danger">Decline</button>
+        </div>
+
+        <!-- Call Screen -->
+        <div id="callScreen" class="call-screen">
+          <video id="remoteVideo" autoplay></video>
+          <video id="localVideo" autoplay muted class="local-video"></video>
+          <button id="endCallBtn" class="btn btn-danger end-btn">
+            End Call
+          </button>
+        </div>
+
+
+
+
+
+
+
+
 
 </body>
 
