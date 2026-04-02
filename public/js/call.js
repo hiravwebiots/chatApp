@@ -1,4 +1,3 @@
-
 document.querySelector('.fa-phone').addEventListener('click', () => {
 
   const receiverId = window.contactLoader.receiverId
@@ -11,6 +10,14 @@ document.querySelector('.fa-phone').addEventListener('click', () => {
   initiateCall(receiverId, 'audio')
 });
 
+document.getElementById('acceptBtn').addEventListener('click', async () => {
+    if(!currentCallId) return
+    
+    document.getElementById('incomingCallUI').style.display = 'none';
+    document.getElementById('callScreen').style.display = 'block'
+
+})
+
 
 document.getElementById('declineBtn').addEventListener('click', async () => {
 
@@ -21,9 +28,14 @@ document.getElementById('declineBtn').addEventListener('click', async () => {
 
 })
 
+document.getElementById('endCallBtn').addEventListener('click', async () => {
+    console.log("🚀 ~ click endCallBtn:")
+    if(!currentCallId) return
 
+    document.getElementById('callScreen').style.display = 'none'
 
-let currentCallId = null;
+})
+
 
 // initiateCall
 const initiateCall = async (receiverId, callType) => {
@@ -101,7 +113,6 @@ const declineCall = async (callId) => {
 socket.on('call-declined', ({ callId }) => {
 
   console.log('Call declined by receiver');
-
 
 })
 

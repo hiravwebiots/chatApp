@@ -233,6 +233,14 @@ const declineCall = async (req, res) => {
         participant.status = 'declined'
         await participant.save()
 
+        const sendParticipant = await callParticipantModel.findOne({
+            callId : call.id,
+            userId : senderId
+        })
+
+        sendParticipant.status = 'outgoind_declined'
+        sendParticipant.save()
+        
         // await callModel.findByIdAndUpdate(
         //     { id : call.id },
         //     { $set : { status : 'ended' } }

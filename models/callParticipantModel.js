@@ -12,7 +12,7 @@ const CallParticipantSchema = mongoose.Schema({
     },
     status : {
         type : String,
-        enum: ['invited', 'joined', 'declined', 'missed', 'left'],
+        enum: ['invited', 'joined', 'declined', 'missed', 'left', 'outgoind_declined'],
         default : 'invited'
     },
     joinedAt : {
