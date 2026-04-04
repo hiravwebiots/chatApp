@@ -1,89 +1,189 @@
+let currentCallId = null
+let isCaller = false
+let peerConnection
+let localStream
+let currentReceiverId
+
+const configuration = {
+  isServers : [{ urls :  }]
+}
+
+
+
+
+// recet ui
+function resetCallUI() {
+  currentCallId = null;
+  isCaller = false;
+
+  document.getElementById('incomingCallUI').style.display = 'none'
+  const cs = document.getElementById('callScreen');
+  if (cs) cs.style.display = 'none';
+}
+
+function showOutgoingCall(receiverName, receiverAvatar) {
+  console.log('showOutgoingCall called');
+
+  const ui = document.getElementById('incomingCallUI');
+  if (!ui) return;
+
+  ui.style.display = 'flex';
+
+  document.getElementById('callStatus').innerText = 'Calling...';
+  if (receiverName) {
+    document.getElementById('callerName').innerText = receiverName;
+  }
+  if (receiverAvatar) {
+    const avatarUrl = receiverAvatar.startsWith('/') ? receiverAvatar : '/' + receiverAvatar;
+    document.getElementById('callAvatar').innerHTML = `<img src="${avatarUrl}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+  } else {
+    document.getElementById('callAvatar').innerHTML = 'DM';
+  }
+  document.getElementById('acceptBtn').style.display = 'none';
+  document.getElementById('declineBtn').style.display = 'inline-flex';
+}
+
 document.querySelector('.fa-phone').addEventListener('click', () => {
 
   const receiverId = window.contactLoader.receiverId
   console.log("🚀 ~ receiverId:", receiverId)
-  if(!receiverId){
+
+  if (!receiverId) {
     console.log('No Receiver Selected');
     return
   }
 
-  initiateCall(receiverId, 'audio')
+  isCaller = true
+
+  const receiverNameEl = document.querySelector('.heading-name-meta');
+  const receiverName = receiverNameEl ? receiverNameEl.textContent : 'Unknown';
+
+  const receiverImgEl = document.querySelector('.conversation .heading-avatar-icon img');
+  const receiverAvatar = receiverImgEl ? receiverImgEl.getAttribute('src') : '';
+
+  console.log('befor working showOutgoingCall');
+  // showOutgoingCall()
+  console.log('after working showOutgoingCall');
+
+
+  initiateCall(receiverId, 'audio', receiverName, receiverAvatar)
 });
 
-document.getElementById('acceptBtn').addEventListener('click', async () => {
-    if(!currentCallId) return
-    
-    document.getElementById('incomingCallUI').style.display = 'none';
-    document.getElementById('callScreen').style.display = 'block'
-
-})
 
 
-document.getElementById('declineBtn').addEventListener('click', async () => {
 
-  if(!currentCallId) return
 
-  declineCall(currentCallId)
-    document.getElementById('incomingCallUI').style.display = 'none';
 
-})
 
-document.getElementById('endCallBtn').addEventListener('click', async () => {
-    console.log("🚀 ~ click endCallBtn:")
-    if(!currentCallId) return
 
-    document.getElementById('callScreen').style.display = 'none'
-
-})
 
 
 // initiateCall
-const initiateCall = async (receiverId, callType) => {
-  
+const initiateCall = async (receiverId, callType, receiverName, receiverAvatar) => {
+
+  showOutgoingCall(receiverName, receiverAvatar)
 
   const res = await fetch('/call/initiate', {
-      method : 'POST',
-      headers : {
-        'Content-Type' : 'application/json'
-      },
-      body : JSON.stringify({ receiverId,  callType })
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ receiverId, callType })
   })
   console.log("🚀 ~ initiateCall ~ res:", res)
 
   const data = await res.json()
-  console.log('Call started', data);  
+
+  console.log('Call started', data);
+
+
+  currentCallId = data.callId;
+
+
+
 }
 
+
+
 socket.on('call-incoming', (data) => {
-    console.log('Incoming Call : ', data);
+  console.log("🚀 ~ data:", data)
+  if (isCaller) return;
 
-    currentCallId = data.callId
-    // show UI Popup  
-      document.getElementById('incomingCallUI').style.display = 'block'
+  console.log('Incoming Call : ', data);
 
 
-})
+  console.log("🚀 ~ callerName:", data.callerName)
+
+  // Only reset if it's a completely different call
+  if (currentCallId && currentCallId !== data.callId) {
+    resetCallUI();
+  }
+
+  currentCallId = data.callId;
+  isCaller = false;
+
+  // Show the UI
+  document.querySelector('.call-ui').style.display = 'flex';   // make sure this selector is correct
+  document.getElementById('incomingCallUI').style.display = 'flex';
+
+  document.getElementById('callStatus').innerText = 'Incoming call...';
+  document.getElementById('callerName').innerText = data.callerName || 'Unknown'
+
+
+  if (data.callerAvatar) {
+    const avatarUrl = data.callerAvatar.startsWith('/') ? data.callerAvatar : '/' + data.callerAvatar;
+    document.getElementById('callAvatar').innerHTML = `<img src="${avatarUrl}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+  } else {
+    document.getElementById('callAvatar').innerHTML = 'DM';
+  }
+
+  document.getElementById('acceptBtn').style.display = 'inline-flex';
+  document.getElementById('declineBtn').style.display = 'inline-flex';
+});
 
 socket.on('call-timeout', (data) => {
-     console.log('Call Timeout : ', data);
+  console.log("🚀 ~ call-timeout:")
 
-    if(currentCallId === data.callId){
-      document.getElementById('incomingCallUI').style.display = 'none'
-
-      currentCallId = null
-    }
+  resetCallUI()
 })
+
+
+document.getElementById('acceptBtn').addEventListener('click', async () => {
+  if (!currentCallId) return
+
+  await answerCall(currentCallId)
+
+  document.getElementById('incomingCallUI').style.display = 'none';
+  const cs = document.getElementById('callScreen');
+  if (cs) cs.style.display = 'block';
+})
+
+document.getElementById('declineBtn').addEventListener('click', async () => {
+  const callIdToUse = currentCallId;   // capture it immediately
+
+  console.log("Decline clicked → isCaller:", isCaller, "callId:", callIdToUse);
+
+
+  if (isCaller) {
+    // Caller is cancelling their outgoing call
+    await endCall(callIdToUse);
+  } else {
+    // Receiver is declining incoming call
+    await declineCall(callIdToUse);
+  }
+  resetCallUI()
+});
 
 
 
 // answerCall
 const answerCall = async (callId) => {
   const res = await fetch('call/answer', {
-    method : 'POST',
-    headers : {
-      'Content-Type' : 'application/json'
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
     },
-    body : JSON.stringify({ callId })
+    body: JSON.stringify({ callId })
   })
 
   const data = await res.json()
@@ -92,18 +192,22 @@ const answerCall = async (callId) => {
 
 socket.on('call-accepted', ({ callId }) => {
   console.log('call accepted by receiver');
-    // start call UI  / webRTC Here
-})  
 
+  if (currentCallId === callId) {
+    resetCallUI();
+  }
+
+})
 
 //declineCall
 const declineCall = async (callId) => {
+  console.log("🚀 ~ declineCall ~ callId:", callId)
   const res = await fetch('call/decline', {
-    method : 'POST',
-    headers : {
-      'Content-Type' : 'application/json'
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
     },
-    body : JSON.stringify({ callId })
+    body: JSON.stringify({ callId })
   })
 
   const data = await res.json()
@@ -114,26 +218,35 @@ socket.on('call-declined', ({ callId }) => {
 
   console.log('Call declined by receiver');
 
+  resetCallUI();
+
 })
-
-
 
 // endCall
 const endCall = async (callId) => {
-  const res = await fetch('call/endCall', {
-    method : 'POST',
-    headers : {
-      'Content-Type' : 'application/json'
+  console.log("🚀 ~ endCall ~ callId:", callId)
+  const res = await fetch('call/end', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
     },
-    body : JSON.stringify({ callId })
+    body: JSON.stringify({ callId })
   })
 
   const data = await res.json()
   console.log('Call ended', data)
 }
 
+socket.on('call-cancelled', ({ callId }) => {
+  console.log('Call-cancelled');
+  resetCallUI()
+})
+
 socket.on('call-ended', ({ callId }) => {
   console.log('Call ended');
-  
-  // reset UI
+
+  if (currentCallId === callId) {
+    resetCallUI();
+  }
+
 })

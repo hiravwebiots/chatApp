@@ -75,7 +75,7 @@ body {
 }
 
 
-.heading {
+.heading {  
   padding: 10px 16px 10px 15px;
   margin: 0;
   height: 60px;
@@ -203,41 +203,68 @@ body {
 
 /* CHAT CONTACT TAB */
 .chat-tabs {
-    margin: 0 !important;
-    height: 40px;
-    border-bottom: 1px solid #ddd;
-    background: #f5f5f5;
-    display: flex;
+  display: flex;
+  width: 100%;
+
 }
 
 .chat-tabs .tab {
-    flex: 1;
-    padding: 8px 0;
-    font-weight: 600;
-    cursor: pointer;
-    border: none;
-    outline: none;
-    background: #eaeaea;
-    border-right: 1px solid #ddd;
+  flex: 1;
+  text-align: center;
+  padding: 12px 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: #000000b4;
+  cursor: pointer;
+  position: relative;
+  background: transparent;
+  border:none;
+  outline: none;
+
+
 }
 
-/* remove last border */
-.chat-tabs .tab:last-child {
-    border-right: none;
-}
-
-/* ACTIVE TAB */
-.active-tab {
-    background: #fff;
-    border: 1px solid #ddd;
-    border-bottom: 1px solid #fff; /* blend with content */
+/* remove bootstrap button effects */
+.chat-tabs .tab:focus,
+.chat-tabs .tab:active {
+  outline: none;
+  box-shadow: none;
 }
 
 /* hover */
 .chat-tabs .tab:hover {
-    background: #ddd;
+  color: #00a884;
 }
- 
+
+/* active tab */
+.chat-tabs .active-tab {
+  color: #00a884;
+  font-weight: 600;
+}
+
+/* green underline */
+.chat-tabs .active-tab::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 30%;
+  width: 40%;
+  height: 3px;
+  background: #00a884;
+  border-radius: 2px;
+}
+
+/* single vertical line between */
+.chat-tabs .tab:first-child::before {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 16%;
+  height: 70%;
+  width: 3px;
+  background: rgba(0, 0, 0, 0.267);
+}
+
 /*  */
 
 .searchBox {
@@ -405,6 +432,19 @@ body {
 }
 
 /*Conversation*/
+
+#welcomeScreen{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100%;
+    font-size:40px;
+    font-weight:600;
+    color:#888;
+
+}
+
+
 
 .heading {
   display: flex;
@@ -739,6 +779,20 @@ body {
 
 
 
+
+.side {
+  border-right: 3px solid #e0e0e0;
+}
+
+
+
+
+
+
+
+
+
+
 /* Incoming Call Popup */
 .incoming-call-ui {
   display: none;
@@ -786,5 +840,129 @@ body {
   position: absolute;
   bottom: 20px;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-80%);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.call-card {
+  display: block;
+  background: rgba(90, 199, 184, 0.90);     
+  backdrop-filter: blur(0px);    /* glass effect */
+
+  padding: 70px 40px;
+  border-radius: 20px;
+  text-align: center;
+  color: white;
+
+  width: 320px;
+  min-height: 420px;
+
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+.call-ui {
+  display: none;
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(0px);
+
+  align-items: center;
+  /* vertical center */
+  justify-content: center;
+  /* horizontal center */
+
+  z-index: 9999;
+}
+
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  background: #ffffff;
+  color: #2d95c9;
+
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin: 0 auto 20px;
+  font-size: 26px;
+  font-weight: bold;
+
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+h2 {
+  font-size: 26px;
+  margin-bottom: 8px;
+}
+
+.call-status {
+  font-size: 13px;
+  opacity: 0.9;
+  margin-bottom: 30px;
+}
+
+
+.call-actions {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+}
+
+.circle-btn {
+  display: inline-flex;  
+
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  border: none;
+
+  align-items: center;
+  justify-content: center;
+
+  font-size: 20px;
+  cursor: pointer;
+
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.accept {
+  background: #2f8033;
+  color: white;
+}
+
+.decline {
+  background: #ff3b30;
+  color: white;
+}
+
+.circle-btn:hover {
+  transform: scale(1.1);
+  transition: 0.2s;
+}
+
+
+
+
+
+
+/* https: //chatgpt.com/s/t_69ceb3514bc081919fa58bc4a5503d1f */

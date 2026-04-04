@@ -23,7 +23,7 @@ const callSchema = mongoose.Schema({
     },
     status : {
         type : String,
-        enum : ['active', 'ended'],
+        enum : ['active', 'ended', 'cancelled'],
         default : 'active'
     },
     startedAt : {

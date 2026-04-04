@@ -69,37 +69,37 @@ const initSocket = (io) => {
         });
     });
 
-    // ======= Call Events =======
+    // ========= webRTC Events ==============
 
-    // 1. Initiate Call 
-//     socket.on('call-initiate', ({ receiverId, callData }) => {
-//         console.log('call-initiate');
-        
-//         socket.to(receiverId).emit('call-incoming', callData)     
-//     })
+    // 1. Send Offer
+    socket.on('offer', ({ offer, receiverId }) => {
+        console.log('Offer received');
 
-//     // 2. Answer Call
-//     socket.on('call-accept', ({ callerId, callId }) => {
-//         console.log('call-accept');
-        
-//         socket.to(callerId).emit('call-accepted', {callId})       
-//     })
+        socket.to(receiverId).emit('offer', {
+            offer,
+            senderId : socket.userId
+        })
+    })
 
-//     // 3. Decline Call
-//     socket.on('call-decline', ({ callerId, callId }) => {
-//         console.log('call-decline');
+    // 2. Send Answer
+    socket.on('answer', ({ answer, receiverId }) => {
+        console.log('Answer received');
         
-//         socket.to(callerId).emit('call-declined', {callId})          
-//     })
+        socket.to(receiverId).emit('answer', {
+            answer,
+            senderId : socket.userId
+        })
+    })
 
-//     // 4. End Call
-//     socket.on('call-end', ({ callId, participant }) => {
-//         console.log('call-end');
+    // 3. ICE Candidates
+    socket.on('ice-candidate', ({ candidate, receiverId }) => {
+        console.log('ICE candidate');
         
-//         participant.forEach(userId => {
-//             socket.to(userId).emit('call-ended', { callId })
-//         });
-//   })
+        socket.to(receiverId).emit('ice-candidate', {
+            candidate,
+            senderId : socket.userId
+        })
+    })
 
   })
 }
@@ -107,4 +107,4 @@ const initSocket = (io) => {
 module.exports = initSocket
 
 
-// messageSocket
+// messageSocket 

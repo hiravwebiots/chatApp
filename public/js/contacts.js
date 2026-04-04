@@ -98,6 +98,9 @@ class contactLoader {
     }
 
     async openChat(user){
+
+        document.getElementById('welcomeScreen').style.display = 'none'
+
         console.log("🚀 ~ contactLoader ~ openChat ~ user:", user)
         // Set user name and profilrPhoto
         const nameEl = document.querySelector(".heading-name-meta")

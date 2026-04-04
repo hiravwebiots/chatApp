@@ -25,7 +25,7 @@
         <script src="/js/contacts.js" defer></script>
         <script src="/socket.io/socket.io.js" defer></script>
         <script src="/js/chatLoad.js" defer></script>
-        <script src="/js/chat.js" defer></script>
+        <script src="/js/chat.js" defer></script> 
         <script src="/js/call.js" defer></script>
 
 
@@ -73,10 +73,10 @@
 
           <!-- Tabs -->
           <div class="row chat-tabs">
-            <button class="col-xs-6 tab active-tab text-center" onclick="openTab(event, 'chat')">
+            <button class="tab active-tab" onclick="openTab(event, 'chat')">
               Chat 
             </button>
-            <button class="col-xs-6 tab text-center" onclick="openTab(event, 'contact')">
+            <button class="tab" onclick="openTab(event, 'contact')">
               Contact
             </button>
           </div>
@@ -195,13 +195,13 @@
 
       <!-- New Message Sidebar End -->
 
-      <!-- Conversation Start -->
-      <div class="col-sm-8 conversation">
 
-      <!-- <div id="welcomeScreen" class="welcome-screen">
-        <h2>Conversation Chat App</h2>
-        <p>Select a user to start chatting</p>
-      </div> -->
+  <div id="welcomeScreen"> Chat APP </div>
+
+
+
+      <!-- Conversation Start -->
+      <div class="col-sm-8 conversation" id="chatSection">
 
 
         <!-- Heading -->
@@ -323,21 +323,27 @@
 
 
         <!-- Incoming Call Popup -->
-        <div id="incomingCallUI" class="incoming-call-ui">
-          <p id="callerText">Incoming Call...</p>
-          <button id="acceptBtn" class="btn btn-success">Accept</button>
-          <button id="declineBtn" class="btn btn-danger">Decline</button>
-        </div>
+        <div id="incomingCallUI" class="call-ui">
+          <div class="call-card">
+            <div class="avatar" id="callAvatar">DM</div>
 
-        <!-- Call Screen -->
-        <div id="callScreen" class="call-screen">
-          <video id="remoteVideo" autoplay></video>
-          <video id="localVideo" autoplay muted class="local-video"></video>
-          <p> Call Started</p>
-          <p> Call Duration : 00:01:59 </p>
-          <button id="endCallBtn" class="btn btn-danger end-btn">
-            End Call
-          </button>
+            <!-- Dynamic Name -->
+            <h2 id="callerName"></h2>
+
+            <p class="call-status" id="callStatus">CALLING...</p>
+
+            <div class="call-actions">
+              <!-- Accept (only for receiver) -->
+              <button id="acceptBtn" class="circle-btn accept">
+                📞
+              </button>
+
+              <!-- Decline (both) -->
+              <button id="declineBtn" class="circle-btn decline">
+                📞
+              </button>
+            </div>
+          </div>
         </div>
         
 </body>

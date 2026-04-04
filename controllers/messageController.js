@@ -195,9 +195,7 @@ const readMessage = async(req, res) => {
     } 
 }
 
-const readMessagePersonalChat = async (req, res) => {
-    console.log('call');
-    
+const readMessagePersonalChat = async (req, res) => {    
     try{
         const loginUserId = req.session.user.id
         const loginUser = await userModel.findById(loginUserId)
@@ -306,6 +304,7 @@ const readMessagePersonalChat = async (req, res) => {
     }
 }
 
+// for chat section user
 const getRecentChats = async (req, res) => {
     try {
         const loginUserId = req.session.user.id;
