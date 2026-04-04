@@ -5,13 +5,10 @@ let localStream
 let currentReceiverId
 
 const configuration = {
-  isServers : [{ urls :  }]
+  iceServers : [{ urls : 'stun:stun.l.google.com:19302' }]
 }
 
-
-
-
-// recet ui
+// ================= RESER UI =================
 function resetCallUI() {
   currentCallId = null;
   isCaller = false;
@@ -33,7 +30,7 @@ function showOutgoingCall(receiverName, receiverAvatar) {
   if (receiverName) {
     document.getElementById('callerName').innerText = receiverName;
   }
-  if (receiverAvatar) {
+  if (receiverAvatar) { 
     const avatarUrl = receiverAvatar.startsWith('/') ? receiverAvatar : '/' + receiverAvatar;
     document.getElementById('callAvatar').innerHTML = `<img src="${avatarUrl}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
   } else {
@@ -43,6 +40,62 @@ function showOutgoingCall(receiverName, receiverAvatar) {
   document.getElementById('declineBtn').style.display = 'inline-flex';
 }
 
+// ================= WEBRTC =================
+function createPeerConnection(receiverId) {
+  peerConnection = new RTCPeerConnection(configuration)
+
+  peerConnection.onicecandidate = (event) => {
+    if(event.candidate) {
+      socket.emit('ice-candidate', {
+        candidate : event.candidate,
+        receiverId
+      })
+    }
+  }
+
+  // for audio + video
+  peerConnection.ontrack = (event) => {
+    const remoteVideo = document.getElementById('remoteVideo')
+
+    if(!remoteVideo.srcObject){
+      remoteVideo.srcObject = new MediaStream()
+    }
+
+    remoteVideo.srcObject.addTrack(event.track)
+  }
+}
+
+async function startMedia() {
+  localStream = await navigator.mediaDevices.getUserMedia({
+      audio : true,
+      video : true
+  })
+
+  const localVideo = document.getElementById('localVideo')
+  localVideo.srcObject = localStream
+
+  localStream.getTracks().forEach(track => {
+    peerConnection.addTrack(track, localStream)
+  })
+}
+
+async function startCall(receiverId) {
+  currentReceiverId = receiverId;
+
+  createPeerConnection(receiverId);
+  await startMedia();
+
+  const offer = await peerConnection.createOffer();
+  await peerConnection.setLocalDescription(offer);
+
+  socket.emit('offer', {
+    offer,
+    receiverId
+  });
+}
+
+
+// ================= CALL BUTTON =================
 document.querySelector('.fa-phone').addEventListener('click', () => {
 
   const receiverId = window.contactLoader.receiverId
@@ -66,19 +119,13 @@ document.querySelector('.fa-phone').addEventListener('click', () => {
   console.log('after working showOutgoingCall');
 
 
-  initiateCall(receiverId, 'audio', receiverName, receiverAvatar)
+  initiateCall(receiverId, 'video', receiverName, receiverAvatar)
 });
 
 
 
 
-
-
-
-
-
-
-// initiateCall
+// ================= initiateCall =================
 const initiateCall = async (receiverId, callType, receiverName, receiverAvatar) => {
 
   showOutgoingCall(receiverName, receiverAvatar)
@@ -94,17 +141,16 @@ const initiateCall = async (receiverId, callType, receiverName, receiverAvatar) 
 
   const data = await res.json()
 
-  console.log('Call started', data);
-
+  console.log('Call started', data); 
 
   currentCallId = data.callId;
+  currentReceiverId = receiverId
 
-
+  await startCall(receiverId);
 
 }
 
-
-
+// ================= INCOMING =================
 socket.on('call-incoming', (data) => {
   console.log("🚀 ~ data:", data)
   if (isCaller) return;
@@ -120,10 +166,11 @@ socket.on('call-incoming', (data) => {
   }
 
   currentCallId = data.callId;
+  currentReceiverId = data.callerId;
+
   isCaller = false;
 
   // Show the UI
-  document.querySelector('.call-ui').style.display = 'flex';   // make sure this selector is correct
   document.getElementById('incomingCallUI').style.display = 'flex';
 
   document.getElementById('callStatus').innerText = 'Incoming call...';
@@ -147,7 +194,7 @@ socket.on('call-timeout', (data) => {
   resetCallUI()
 })
 
-
+// ================= ACCEOT BUTTON =================
 document.getElementById('acceptBtn').addEventListener('click', async () => {
   if (!currentCallId) return
 
@@ -155,9 +202,10 @@ document.getElementById('acceptBtn').addEventListener('click', async () => {
 
   document.getElementById('incomingCallUI').style.display = 'none';
   const cs = document.getElementById('callScreen');
-  if (cs) cs.style.display = 'block';
+  if (cs) cs.style.display = 'flex';
 })
 
+// ================= DECLINE BUTTON =================
 document.getElementById('declineBtn').addEventListener('click', async () => {
   const callIdToUse = currentCallId;   // capture it immediately
 
@@ -174,9 +222,18 @@ document.getElementById('declineBtn').addEventListener('click', async () => {
   resetCallUI()
 });
 
+// ================= ENDCALL BUTTON =================
+document.getElementById('endCallBtn').addEventListener('click', async () => {
+  const callIdToUse = currentCallId
 
+  console.log('endCall Button Clicked');
 
-// answerCall
+  await endCall(callIdToUse)
+  
+  resetCallUI()
+})
+
+// ================= answerCall =================
 const answerCall = async (callId) => {
   const res = await fetch('call/answer', {
     method: 'POST',
@@ -190,16 +247,51 @@ const answerCall = async (callId) => {
   console.log('Call accepted', data);
 }
 
-socket.on('call-accepted', ({ callId }) => {
+socket.on('call-accepted', async ({ callId }) => {
   console.log('call accepted by receiver');
 
-  if (currentCallId === callId) {
-    resetCallUI();
-  }
+  // console.log("🚀 ~ currentCallId === callId:", currentCallId === callId)
+  // if (currentCallId === callId) return
 
+  
+  document.getElementById('incomingCallUI').style.display = 'none';
+  document.getElementById('callScreen').style.display = 'flex';
 })
 
-//declineCall
+
+// ================= OFFER =================
+socket.on('offer', async({ offer, senderId }) => {
+  currentReceiverId = senderId
+
+  createPeerConnection(senderId)
+  await startMedia()
+
+  await peerConnection.setRemoteDescription(new RTCSessionDescription(offer))
+
+  const answer = await peerConnection.createAnswer()
+  await peerConnection.setLocalDescription(answer)
+
+  socket.emit('answer', {
+    answer,
+    receiverId : senderId
+  })
+})
+
+// ================= ANSWER =================
+socket.on('answer', async({ answer }) => {
+  await peerConnection.setRemoteDescription(
+    new RTCSessionDescription(answer)
+  )
+})
+
+// ================= ICE =================
+socket.on('ice-candidate', async ({ candidate }) => {
+  if(candidate && peerConnection) {
+    await peerConnection.addIceCandidate(new RTCIceCandidate(candidate))
+  }
+})
+
+// ================= declineCall =================
 const declineCall = async (callId) => {
   console.log("🚀 ~ declineCall ~ callId:", callId)
   const res = await fetch('call/decline', {
@@ -215,14 +307,14 @@ const declineCall = async (callId) => {
 }
 
 socket.on('call-declined', ({ callId }) => {
-
+  
   console.log('Call declined by receiver');
 
   resetCallUI();
 
 })
 
-// endCall
+// ================= endCall =================
 const endCall = async (callId) => {
   console.log("🚀 ~ endCall ~ callId:", callId)
   const res = await fetch('call/end', {
@@ -245,6 +337,7 @@ socket.on('call-cancelled', ({ callId }) => {
 socket.on('call-ended', ({ callId }) => {
   console.log('Call ended');
 
+  console.log("🚀 ~ currentCallId === callId:", currentCallId === callId)
   if (currentCallId === callId) {
     resetCallUI();
   }

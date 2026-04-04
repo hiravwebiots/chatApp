@@ -806,54 +806,6 @@ body {
   box-shadow: 0 0 10px rgba(0,0,0,0.2);
 }
 
-/* Call Screen */
-.call-screen {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: black;
-  z-index: 9999;
-}
-
-/* Remote video full screen */
-#remoteVideo {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* Small local video */
-.local-video {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-  width: 200px;
-  border: 2px solid white;
-  border-radius: 10px;
-}
-
-/* End button */
-.end-btn {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-80%);
-}
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 .call-card {
@@ -965,4 +917,39 @@ h2 {
 
 
 
-/* https: //chatgpt.com/s/t_69ceb3514bc081919fa58bc4a5503d1f */
+
+
+/* Call Screen */
+
+
+/* Optional pulse animation for audio call */
+.avatar {
+  position: relative;
+}
+
+.avatar::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.5);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  70% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+
+/* end call Screem */

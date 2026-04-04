@@ -19,7 +19,7 @@ function resetCallUI() {
   if (cs) cs.style.display = 'none';
 }
 
-function showOutgoingCall(receiverName, receiverAvatar) {
+function showOutgoingCall(receiverName) {
   const ui = document.getElementById('incomingCallUI');
   if (!ui) return;
 
@@ -44,8 +44,15 @@ function createPeerConnection(receiverId) {
     }
   };
 
+  // ✅ FIXED for audio + video
   peerConnection.ontrack = (event) => {
-    document.getElementById('remoteVideo').srcObject = event.streams[0];
+    const remoteVideo = document.getElementById('remoteVideo');
+
+    if (!remoteVideo.srcObject) {
+      remoteVideo.srcObject = new MediaStream();
+    }
+
+    remoteVideo.srcObject.addTrack(event.track);
   };
 }
 
@@ -55,7 +62,8 @@ async function startMedia() {
     audio: true
   });
 
-  document.getElementById('localVideo').srcObject = localStream;
+  const localVideo = document.getElementById('localVideo');
+  localVideo.srcObject = localStream;
 
   localStream.getTracks().forEach(track => {
     peerConnection.addTrack(track, localStream);
@@ -86,7 +94,7 @@ document.querySelector('.fa-phone').addEventListener('click', () => {
 
   const receiverName = document.querySelector('.heading-name-meta')?.textContent || 'Unknown';
 
-  initiateCall(receiverId, 'audio', receiverName);
+  initiateCall(receiverId, 'video', receiverName);
 });
 
 // ================= INITIATE =================
@@ -138,10 +146,8 @@ socket.on('call-accepted', async ({ callId, receiverId }) => {
   if (currentCallId !== callId) return;
 
   resetCallUI();
-
   document.getElementById('callScreen').style.display = 'block';
 
-  // START WEBRTC (CALLER)
   await startCall(receiverId);
 });
 
@@ -205,5 +211,8 @@ socket.on('call-ended', () => {
 });
 
 // ================= REQUIRED HTML =================
-// <video id="localVideo" autoplay muted></video>
-// <video id="remoteVideo" autoplay></video>
+// Put this inside your callScreen
+// <div id="callScreen" style="display:none;">
+//   <video id="localVideo" autoplay muted playsinline></video>
+//   <video id="remoteVideo" autoplay playsinline></video>
+// </div>   
