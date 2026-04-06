@@ -1,10 +1,12 @@
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
   padding: 0;
 }
 
-div, span {
+div,
+span {
   box-sizing: border-box;
 }
 
@@ -41,6 +43,7 @@ body {
   margin: 0;
   height: 100%;
 }
+
 .side-one {
   padding: 0;
   margin: 0;
@@ -75,7 +78,7 @@ body {
 }
 
 
-.heading {  
+.heading {
   padding: 10px 16px 10px 15px;
   margin: 0;
   height: 60px;
@@ -112,12 +115,14 @@ body {
   color: #000;
   display: block;
 }
+
 .heading-online {
   display: none;
   padding: 0 5px;
   font-size: 12px;
   color: #93918f;
 }
+
 .heading-compose {
   padding: 0;
 }
@@ -146,17 +151,17 @@ body {
 
 
 /* Setting Menu */
-.dropdownmenu{
-  display:none;
-  position:absolute;
-  top:30px;
-  right:0;
-  background:white;
-  border:1px solid #ccc;
-  border-radius:5px;
-  width:120px;
-  box-shadow:0 2px 6px rgba(0,0,0,0.2);
-  z-index:1000;
+.dropdownmenu {
+  display: none;
+  position: absolute;
+  top: 30px;
+  right: 0;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 120px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
 }
 
 
@@ -176,11 +181,13 @@ body {
 
 
 .dropdown-content {
-  display: none; /* Hide the list initially */
-  position: absolute; /* Position the list relative to the dropdown container */
+  display: none;
+  /* Hide the list initially */
+  position: absolute;
+  /* Position the list relative to the dropdown container */
   background-color: #f9f9f9;
   min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
   z-index: 1;
 }
 
@@ -193,10 +200,15 @@ body {
 }
 
 /* Add a hover effect to list items */
-.dropdown-content a:hover {background-color: #f1f1f1;}
+.dropdown-content a:hover {
+  background-color: #f1f1f1;
+}
 
 /* A class to show the list (added by JavaScript) */
-.show {display: block;}
+.show {
+  display: block;
+}
+
 /*  */
 
 
@@ -218,7 +230,7 @@ body {
   cursor: pointer;
   position: relative;
   background: transparent;
-  border:none;
+  border: none;
   outline: none;
 
 
@@ -368,6 +380,7 @@ body {
   position: relative;
   left: -100%;
 }
+
 .newMessage-heading {
   padding: 10px 16px 10px 15px !important;
   margin: 0 !important;
@@ -392,12 +405,14 @@ body {
   font-weight: 700;
   padding: 10px 5px !important;
 }
+
 .newMessage-back {
   text-align: center;
   padding: 12px 5px !important;
   display: block;
   cursor: pointer;
 }
+
 .newMessage-back i {
   margin: auto !important;
 }
@@ -433,14 +448,14 @@ body {
 
 /*Conversation*/
 
-#welcomeScreen{
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:100%;
-    font-size:40px;
-    font-weight:600;
-    color:#888;
+#welcomeScreen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  font-size: 40px;
+  font-weight: 600;
+  color: #888;
 
 }
 
@@ -452,13 +467,15 @@ body {
 }
 
 .heading-name {
-  flex: 1; /* takes remaining space */
+  flex: 1;
+  /* takes remaining space */
 }
 
 .heading-call {
   display: flex;
   align-items: center;
-  margin-left: auto; /* pushes icons to right */
+  margin-left: auto;
+  /* pushes icons to right */
 }
 
 .call-icon {
@@ -467,16 +484,17 @@ body {
   transition: 0.10s;
 }
 
-.call-icon + .call-icon {
+.call-icon+.call-icon {
   margin-left: 25px;
 }
 
 .call-icon:hover {
-  color: #26a454; /* WhatsApp green */
+  color: #26a454;
+  /* WhatsApp green */
 }
 
 
- 
+
 .conversation {
   padding: 0 !important;
   margin: 0 !important;
@@ -495,12 +513,14 @@ body {
   border: 1px solid #f7f7f7;
   height: calc(100% - 120px);
 }
+
 .message-previous {
-  margin : 0 !important;
+  margin: 0 !important;
   padding: 0 !important;
   height: auto;
   width: 100%;
 }
+
 .previous {
   font-size: 15px;
   text-align: center;
@@ -517,7 +537,7 @@ body {
   margin: 2px !important;
   padding: 0 !important;
   width: auto;
-  height : auto;
+  height: auto;
 }
 
 .message-main-receiver {
@@ -536,7 +556,7 @@ body {
 .message-text {
   margin: 0 !important;
   padding: 5px !important;
-  word-wrap:break-word;
+  word-wrap: break-word;
   font-weight: 200;
   font-size: 14px;
   padding-bottom: 0 !important;
@@ -647,63 +667,79 @@ body {
     top: 0;
     height: 100%;
   }
+
   .heading {
     height: 70px;
     background-color: #009688;
   }
+
   .fa-2x {
     font-size: 2.3em !important;
   }
+
   .heading-avatar {
     padding: 0 !important;
   }
+
   .heading-avatar-icon img {
     height: 50px;
     width: 50px;
   }
+
   .heading-compose {
     padding: 5px !important;
   }
+
   .heading-compose i {
     color: #fff;
     cursor: pointer;
   }
+
   .heading-dot {
     padding: 5px !important;
     margin-left: 10px !important;
   }
+
   .heading-dot i {
     color: #fff;
     cursor: pointer;
   }
+
   .sideBar {
     height: calc(100% - 130px);
   }
+
   .sideBar-body {
     height: 80px;
   }
+
   .sideBar-avatar {
     text-align: left;
     padding: 0 8px !important;
   }
+
   .avatar-icon img {
     height: 55px;
     width: 55px;
   }
+
   .sideBar-main {
     display: flex;
     flex-direction: column;
     justify-content: center;
     height: 100%;
   }
+
   .sideBar-main .row {
     padding: 0 !important;
     margin: 0 !important;
   }
+
   .sideBar-name {
-  padding: 0 !important;
-  margin-bottom: 3px;
+    padding: 0 !important;
+    margin-bottom: 3px;
   }
+
   .sideBar-message {
     font-size: 10px;
     color: #777;
@@ -711,14 +747,17 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
   .name-meta {
     font-size: 15px;
     font-weight: 600;
     color: #000;
   }
+
   .sideBar-time {
     padding: 10px !important;
   }
+
   .time-meta {
     text-align: right;
     font-size: 14px;
@@ -726,6 +765,7 @@ body {
     color: rgba(0, 0, 0, .4);
     vertical-align: baseline;
   }
+
   /*Conversation*/
   .conversation {
     padding: 0 !important;
@@ -735,42 +775,53 @@ body {
     border-left: 1px solid rgba(165, 19, 19, 0.08);
     /*overflow-y: auto;*/
   }
+
   .message {
     height: calc(100% - 140px);
   }
+
   .reply {
     height: 70px;
   }
-  .typingIndicator{
+
+  .typingIndicator {
     padding: 5px 15px;
     font-size: 13px;
     color: #888;
     height: 20px;
   }
+
   .reply-emojis {
     padding: 5px 0 !important;
   }
+
   .reply-emojis i {
     padding: 5px 2px !important;
     font-size: 1.8em !important;
   }
+
   .reply-main {
     padding: 2px 8px !important;
   }
+
   .reply-main textarea {
     padding: 8px !important;
     font-size: 18px;
   }
+
   .reply-recording {
     padding: 5px 0 !important;
   }
+
   .reply-recording i {
     padding: 5px 0 !important;
     font-size: 1.8em !important;
   }
+
   .reply-send {
     padding: 5px 0 !important;
   }
+
   .reply-send i {
     padding: 5px 2px 5px 0 !important;
     font-size: 1.8em !important;
@@ -803,15 +854,16 @@ body {
   padding: 20px;
   border-radius: 10px;
   z-index: 9999;
-  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
 
 
 .call-card {
   display: block;
-  background: rgba(90, 199, 184, 0.90);     
-  backdrop-filter: blur(0px);    /* glass effect */
+  background: rgba(90, 199, 184, 0.90);
+  backdrop-filter: blur(0px);
+  /* glass effect */
 
   padding: 70px 40px;
   border-radius: 20px;
@@ -823,6 +875,7 @@ body {
 
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
+
 .call-ui {
   display: none;
 
@@ -881,7 +934,7 @@ h2 {
 }
 
 .circle-btn {
-  display: inline-flex;  
+  display: inline-flex;
 
   width: 55px;
   height: 55px;
@@ -915,13 +968,22 @@ h2 {
 
 
 
+/* Error message display in call Screen */
 
+.callErrMessage {
+  display: none;
+  color: #fa0000;
+  text-align: center;
+  margin-bottom: 15px;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+/* ens */
 
 
 
 /* Call Screen */
-
-
 /* Optional pulse animation for audio call */
 .avatar {
   position: relative;
@@ -933,7 +995,7 @@ h2 {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.5);
+  border: 2px solid rgba(255, 255, 255, 0.5);
   animation: pulse 1.5s infinite;
 }
 
@@ -942,10 +1004,12 @@ h2 {
     transform: scale(1);
     opacity: 0.7;
   }
+
   70% {
     transform: scale(1.4);
     opacity: 0;
   }
+
   100% {
     opacity: 0;
   }

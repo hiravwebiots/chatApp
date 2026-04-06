@@ -1,6 +1,7 @@
 const userModel = require('../models/userModel');
 const callParticipantModel = require('../models/callParticipantModel')
 const callModel = require('../models/callModel');
+const messageModel = require('../models/messageModel');
 
 const initiateCall = async (req, res) => {
     try {
@@ -112,6 +113,17 @@ const initiateCall = async (req, res) => {
                     io.to(call.receiverId.toString()).emit('call-timeout', { callId: call.id })
 
                     console.log('call Time Out Missed Call');
+
+                    // Create missed call log in message model
+                    const logMessage = await messageModel.create({
+                        senderId: call.initiatorId,
+                        receiverId: call.receiverId,
+                        content: 'Missed Call',
+                        messageType: 'call_log'
+                    });
+                    const populatedLog = await messageModel.findById(logMessage.id).populate('senderId', 'id name profilePhoto').populate('receiverId', 'id name profilePhoto');
+                    io.to(call.initiatorId.toString()).emit('receive-message', populatedLog);
+                    io.to(call.receiverId.toString()).emit('receive-message', populatedLog);
                 }
             } catch (err) {
                 console.error('error in unanswered call timeout', err)
@@ -256,12 +268,23 @@ const declineCall = async (req, res) => {
         call.status = 'ended'
         await call.save()
 
+        // Create declined log in message model
+        const logMessage = await messageModel.create({
+            senderId: call.initiatorId,
+            receiverId: call.receiverId,
+            content: 'Call Declined',
+            messageType: 'call_log'
+        });
+        const populatedLog = await messageModel.findById(logMessage.id).populate('senderId', 'id name profilePhoto').populate('receiverId', 'id name profilePhoto');
+
         // socket
         const io = req.app.get('io')
 
         io.to(call.initiatorId.toString()).emit('call-declined', {
             callId
         })
+        io.to(call.initiatorId.toString()).emit('receive-message', populatedLog);
+        io.to(call.receiverId.toString()).emit('receive-message', populatedLog);
 
         res.status(200).json({ status: 1, message: 'Successfully declined Call', data: call })
 
@@ -300,6 +323,17 @@ const endCall = async (req, res) => {
 
             io.to(call.receiverId.toString()).emit('call-cancelled', { callId })
             console.log('call cancel');
+
+            // Create cancelled log in message model
+            const logMessage = await messageModel.create({
+                senderId: call.initiatorId,
+                receiverId: call.receiverId,
+                content: 'Call Cancelled',
+                messageType: 'call_log'
+            });
+            const populatedLog = await messageModel.findById(logMessage.id).populate('senderId', 'id name profilePhoto').populate('receiverId', 'id name profilePhoto');
+            io.to(call.initiatorId.toString()).emit('receive-message', populatedLog);
+            io.to(call.receiverId.toString()).emit('receive-message', populatedLog);
 
             return res.status(200).json({ status: 1, message: 'call cancelled by caller' })
         }
@@ -349,6 +383,21 @@ const endCall = async (req, res) => {
 
             io.to(call.initiatorId.toString()).emit('call-ended', { callId })
             io.to(call.receiverId.toString()).emit('call-ended', { callId })
+
+            const minutes = Math.floor(duration / 60);
+            const seconds = duration % 60;
+            const durationStr = `${minutes > 0 ? minutes + 'm ' : ''}${seconds}s`;
+
+            // Create ended log in message model
+            const logMessage = await messageModel.create({
+                senderId: call.initiatorId,
+                receiverId: call.receiverId,
+                content: `Call Ended (${durationStr})`,
+                messageType: 'call_log'
+            });
+            const populatedLog = await messageModel.findById(logMessage.id).populate('senderId', 'id name profilePhoto').populate('receiverId', 'id name profilePhoto');
+            io.to(call.initiatorId.toString()).emit('receive-message', populatedLog);
+            io.to(call.receiverId.toString()).emit('receive-message', populatedLog);
 
             return res.status(200).json({ status: 1, message: 'Successfully Call ended', duration: duration })
         }

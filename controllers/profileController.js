@@ -115,5 +115,23 @@ const deleteProfile = async(req, res) => {
     }
 }
 
+const searchProfile = async(req, res) => {
+    try {
+        const { name } = req.query;
+        if (!name) {
+            return res.status(400).json({ status: 0, message: "Search term is required" });
+        }
+        
+        // Find users with names matching the search term (case-insensitive)
+        const users = await userModel.find({
+            name: { $regex: name, $options: 'i' }
+        });
+        
+        res.status(200).json({ status: 1, message: "Search results", data: users });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ status: 0, message: "Error while searching users" });
+    }
+}
 
-module.exports = { getAllProfile, getSelfProfile, updateProfile, deleteProfile}
+module.exports = { getAllProfile, getSelfProfile, updateProfile, deleteProfile, searchProfile}

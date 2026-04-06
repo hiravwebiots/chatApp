@@ -325,6 +325,9 @@
         <!-- Incoming Call Popup -->
         <div id="incomingCallUI" class="call-ui">
           <div class="call-card">
+            
+            <div id="callErrorMessage" class="callErrMessage"></div>
+
             <div class="avatar" id="callAvatar">DM</div>
 
             <!-- Dynamic Name -->
@@ -346,33 +349,26 @@
           </div>
         </div>
         
-
-
-
+        <audio id="myRingtone" loop>
+          <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" type="audio/mpeg">
+        </audio>
 
         <!-- Call Screen -->
-<div id="callScreen" class="call-ui">
-
-  <div class="call-card">
-
-    <!-- Avatar -->
-    <div class="avatar" id="inCallAvatar">DM</div>
-
-    <!-- Name -->
-    <h2 id="inCallName"></h2>
-
-    <!-- Status -->
-    <p class="call-status" id="callTimer">00:00</p>
-
-    <!-- Controls -->
-    <div class="call-actions">
-      <button id="muteBtn" class="circle-btn">🎤</button>
-      <button id="endCallBtn" class="circle-btn decline">📞</button>
-    </div>
-
-  </div>
-
-</div>
+        <div id="callScreen" class="call-ui">
+          <div class="call-card">
+            <!-- Avatar -->
+            <div class="avatar" id="inCallAvatar">DM</div>
+            <!-- Name -->
+            <h2 id="inCallName"></h2>
+            <!-- Status -->
+            <p class="call-status" id="callTimer">00:00</p>
+            <!-- Controls -->
+            <div class="call-actions">
+              <button id="muteBtn" class="circle-btn">🎤</button>
+              <button id="endCallBtn" class="circle-btn decline">📞</button>
+            </div>
+          </div>
+        </div>
 
 
 

@@ -3,20 +3,146 @@ let isCaller = false
 let peerConnection
 let localStream
 let currentReceiverId
+let currentCallType = 'audio';
+let currentChatUserName = '';
+let currentChatUserAvatar = '';
+
+let callTimerInterval = null;
+let callSeconds = 0;
 
 const configuration = {
-  iceServers : [{ urls : 'stun:stun.l.google.com:19302' }]
+  iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
 }
 
 // ================= RESER UI =================
 function resetCallUI() {
+    stopRingtone()
+ 
   currentCallId = null;
   isCaller = false;
+  currentCallType = 'audio';
+  currentChatUserName = '';
+  currentChatUserAvatar = '';
 
   document.getElementById('incomingCallUI').style.display = 'none'
+  const errEl = document.getElementById('callErrorMessage');
+  if (errEl) {
+    errEl.style.display = 'none';
+    errEl.innerText = '';
+  }
   const cs = document.getElementById('callScreen');
   if (cs) cs.style.display = 'none';
+
+  if (localStream) {
+    localStream.getTracks().forEach(track => track.stop());
+    localStream = null;
+  }
+  if (peerConnection) {
+    peerConnection.close();
+    peerConnection = null;
+  }
+  const remoteVideo = document.getElementById('remoteVideo');
+  if (remoteVideo) {
+    remoteVideo.srcObject = null;
+  }
+  stopCallTimer();
 }
+
+// ================= TIMER =================
+function startCallTimer() {
+  stopCallTimer(); // ensure no overlapping timers
+  callSeconds = 0;
+  updateTimerUI();
+  callTimerInterval = setInterval(() => {
+    callSeconds++;
+    updateTimerUI();
+  }, 1000);
+}
+
+function updateTimerUI() {
+  const min = String(Math.floor(callSeconds / 60)).padStart(2, '0');
+  const sec = String(callSeconds % 60).padStart(2, '0');
+  const timerEl = document.getElementById('callTimer');
+  if (timerEl) {
+    timerEl.innerText = `${min}:${sec}`;
+  }
+}
+
+function stopCallTimer() {
+  if (callTimerInterval) {
+    clearInterval(callTimerInterval);
+    callTimerInterval = null;
+  }
+  const timerEl = document.getElementById('callTimer');
+  if (timerEl) {
+    timerEl.innerText = "00:00";
+  }
+}
+
+function showCallScreen() {
+  document.getElementById('incomingCallUI').style.display = 'none';
+  const cs = document.getElementById('callScreen');
+  if (cs) {
+    cs.style.display = 'flex';
+    document.getElementById('inCallName').innerText = currentChatUserName || 'Unknown';
+    if (currentChatUserAvatar) {
+      const avatarUrl = currentChatUserAvatar.startsWith('/') ? currentChatUserAvatar : '/' + currentChatUserAvatar;
+      document.getElementById('inCallAvatar').innerHTML = `<img src="${avatarUrl}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+    } else {
+      document.getElementById('inCallAvatar').innerHTML = 'DM';
+    }
+  }
+  startCallTimer();
+
+  // video call ui
+
+}
+// ======================================+++++
+
+// ================= RINGTONE =================
+// without click use can't access the audio so 
+let isAudioUnlocked = false;
+
+function unlockAudio() {
+  if (isAudioUnlocked) return;
+
+  const audio = document.getElementById('myRingtone');
+  if (!audio) return;
+
+  audio.play()
+    .then(() => {
+      audio.pause();
+      audio.currentTime = 0;
+      isAudioUnlocked = true;
+      console.log('Audio unlocked');
+    })
+    .catch(() => {});
+}
+
+// trigger on first user interaction
+document.addEventListener('click', unlockAudio, { once: true });
+
+
+function playRingtone() {
+  const audio = document.getElementById('myRingtone');
+
+  if (audio && isAudioUnlocked) {
+    audio.currentTime = 0;
+    audio.play().catch(err => {
+      console.log('Play blocked:', err);
+    });
+  }
+}
+
+function stopRingtone(){
+  const audio = document.getElementById('myRingtone')
+  if(audio){
+    audio.pause()
+    audio.currentTime = 0
+  }
+}
+// ======================================+++++
+
 
 function showOutgoingCall(receiverName, receiverAvatar) {
   console.log('showOutgoingCall called');
@@ -30,7 +156,7 @@ function showOutgoingCall(receiverName, receiverAvatar) {
   if (receiverName) {
     document.getElementById('callerName').innerText = receiverName;
   }
-  if (receiverAvatar) { 
+  if (receiverAvatar) {
     const avatarUrl = receiverAvatar.startsWith('/') ? receiverAvatar : '/' + receiverAvatar;
     document.getElementById('callAvatar').innerHTML = `<img src="${avatarUrl}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
   } else {
@@ -45,9 +171,9 @@ function createPeerConnection(receiverId) {
   peerConnection = new RTCPeerConnection(configuration)
 
   peerConnection.onicecandidate = (event) => {
-    if(event.candidate) {
+    if (event.candidate) {
       socket.emit('ice-candidate', {
-        candidate : event.candidate,
+        candidate: event.candidate,
         receiverId
       })
     }
@@ -55,9 +181,16 @@ function createPeerConnection(receiverId) {
 
   // for audio + video
   peerConnection.ontrack = (event) => {
-    const remoteVideo = document.getElementById('remoteVideo')
+    let remoteVideo = document.getElementById('remoteVideo');
+    if (!remoteVideo) {
+      remoteVideo = document.createElement('video');
+      remoteVideo.id = 'remoteVideo';
+      remoteVideo.autoplay = true;
+      remoteVideo.style.display = 'none'; // hide for now, can be updated for video call UI later
+      document.body.appendChild(remoteVideo);
+    }
 
-    if(!remoteVideo.srcObject){
+    if (!remoteVideo.srcObject) {
       remoteVideo.srcObject = new MediaStream()
     }
 
@@ -66,12 +199,21 @@ function createPeerConnection(receiverId) {
 }
 
 async function startMedia() {
+  const isVideo = currentCallType === 'video';
   localStream = await navigator.mediaDevices.getUserMedia({
-      audio : true,
-      video : true
+    audio: true,
+    video: isVideo
   })
 
-  const localVideo = document.getElementById('localVideo')
+  let localVideo = document.getElementById('localVideo')
+  if (!localVideo) {
+    localVideo = document.createElement('video');
+    localVideo.id = 'localVideo';
+    localVideo.autoplay = true;
+    localVideo.muted = true;
+    localVideo.style.display = 'none';
+    document.body.appendChild(localVideo);
+  }
   localVideo.srcObject = localStream
 
   localStream.getTracks().forEach(track => {
@@ -96,8 +238,7 @@ async function startCall(receiverId) {
 
 
 // ================= CALL BUTTON =================
-document.querySelector('.fa-phone').addEventListener('click', () => {
-
+function handleOutgoingCallClick(callType) {
   const receiverId = window.contactLoader.receiverId
   console.log("🚀 ~ receiverId:", receiverId)
 
@@ -109,18 +250,30 @@ document.querySelector('.fa-phone').addEventListener('click', () => {
   isCaller = true
 
   const receiverNameEl = document.querySelector('.heading-name-meta');
-  const receiverName = receiverNameEl ? receiverNameEl.textContent : 'Unknown';
+  currentChatUserName = receiverNameEl ? receiverNameEl.textContent : 'Unknown';
 
   const receiverImgEl = document.querySelector('.conversation .heading-avatar-icon img');
-  const receiverAvatar = receiverImgEl ? receiverImgEl.getAttribute('src') : '';
+  currentChatUserAvatar = receiverImgEl ? receiverImgEl.getAttribute('src') : '';
+
+  currentCallType = callType;
 
   console.log('befor working showOutgoingCall');
   // showOutgoingCall()
   console.log('after working showOutgoingCall');
 
 
-  initiateCall(receiverId, 'video', receiverName, receiverAvatar)
-});
+  initiateCall(receiverId, callType, currentChatUserName, currentChatUserAvatar)
+}
+
+const faPhone = document.querySelector('.fa-phone');
+if (faPhone) {
+  faPhone.addEventListener('click', () => handleOutgoingCallClick('audio'));
+}
+
+const faVideo = document.querySelector('.fa-video-camera');
+if (faVideo) {
+  faVideo.addEventListener('click', () => handleOutgoingCallClick('video'));
+}
 
 
 
@@ -141,9 +294,25 @@ const initiateCall = async (receiverId, callType, receiverName, receiverAvatar) 
 
   const data = await res.json()
 
-  console.log('Call started', data); 
+  if (!res.ok) {
+    const errEl = document.getElementById('callErrorMessage');
+    if (errEl) {
+      errEl.innerText = data.message || 'Could not initiate call';
+      errEl.style.display = 'block';
+    }
+    document.getElementById('acceptBtn').style.display = 'none';
+    document.getElementById('declineBtn').style.display = 'none';
+    document.getElementById('callStatus').innerText = 'Call Failed';
+    
+    setTimeout(() => {
+      resetCallUI();
+    }, 5000);
+    return;
+  }
 
-  currentCallId = data.callId;
+  console.log('Call started', data);
+
+  currentCallId = data.data._id;
   currentReceiverId = receiverId
 
   await startCall(receiverId);
@@ -165,6 +334,10 @@ socket.on('call-incoming', (data) => {
     resetCallUI();
   }
 
+  // ringtone
+  playRingtone()
+
+  // just for Knowledge data.callId store not a call.id direct
   currentCallId = data.callId;
   currentReceiverId = data.callerId;
 
@@ -173,12 +346,16 @@ socket.on('call-incoming', (data) => {
   // Show the UI
   document.getElementById('incomingCallUI').style.display = 'flex';
 
+  currentCallType = data.callType || 'audio';
+  currentChatUserName = data.callerName || 'Unknown';
+  currentChatUserAvatar = data.callerAvatar || '';
+
   document.getElementById('callStatus').innerText = 'Incoming call...';
-  document.getElementById('callerName').innerText = data.callerName || 'Unknown'
+  document.getElementById('callerName').innerText = currentChatUserName;
 
 
-  if (data.callerAvatar) {
-    const avatarUrl = data.callerAvatar.startsWith('/') ? data.callerAvatar : '/' + data.callerAvatar;
+  if (currentChatUserAvatar) {
+    const avatarUrl = currentChatUserAvatar.startsWith('/') ? currentChatUserAvatar : '/' + currentChatUserAvatar;
     document.getElementById('callAvatar').innerHTML = `<img src="${avatarUrl}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
   } else {
     document.getElementById('callAvatar').innerHTML = 'DM';
@@ -198,11 +375,10 @@ socket.on('call-timeout', (data) => {
 document.getElementById('acceptBtn').addEventListener('click', async () => {
   if (!currentCallId) return
 
+  stopRingtone()
   await answerCall(currentCallId)
 
-  document.getElementById('incomingCallUI').style.display = 'none';
-  const cs = document.getElementById('callScreen');
-  if (cs) cs.style.display = 'flex';
+  showCallScreen();
 })
 
 // ================= DECLINE BUTTON =================
@@ -211,6 +387,7 @@ document.getElementById('declineBtn').addEventListener('click', async () => {
 
   console.log("Decline clicked → isCaller:", isCaller, "callId:", callIdToUse);
 
+  stopRingtone()
 
   if (isCaller) {
     // Caller is cancelling their outgoing call
@@ -225,17 +402,19 @@ document.getElementById('declineBtn').addEventListener('click', async () => {
 // ================= ENDCALL BUTTON =================
 document.getElementById('endCallBtn').addEventListener('click', async () => {
   const callIdToUse = currentCallId
-
+  
   console.log('endCall Button Clicked');
+  
+  stopRingtone()
 
   await endCall(callIdToUse)
-  
+
   resetCallUI()
 })
 
 // ================= answerCall =================
 const answerCall = async (callId) => {
-  const res = await fetch('call/answer', {
+  const res = await fetch('/call/answer', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -253,14 +432,13 @@ socket.on('call-accepted', async ({ callId }) => {
   // console.log("🚀 ~ currentCallId === callId:", currentCallId === callId)
   // if (currentCallId === callId) return
 
-  
-  document.getElementById('incomingCallUI').style.display = 'none';
-  document.getElementById('callScreen').style.display = 'flex';
+
+  showCallScreen();
 })
 
 
 // ================= OFFER =================
-socket.on('offer', async({ offer, senderId }) => {
+socket.on('offer', async ({ offer, senderId }) => {
   currentReceiverId = senderId
 
   createPeerConnection(senderId)
@@ -273,12 +451,12 @@ socket.on('offer', async({ offer, senderId }) => {
 
   socket.emit('answer', {
     answer,
-    receiverId : senderId
+    receiverId: senderId
   })
 })
 
 // ================= ANSWER =================
-socket.on('answer', async({ answer }) => {
+socket.on('answer', async ({ answer }) => {
   await peerConnection.setRemoteDescription(
     new RTCSessionDescription(answer)
   )
@@ -286,7 +464,7 @@ socket.on('answer', async({ answer }) => {
 
 // ================= ICE =================
 socket.on('ice-candidate', async ({ candidate }) => {
-  if(candidate && peerConnection) {
+  if (candidate && peerConnection) {
     await peerConnection.addIceCandidate(new RTCIceCandidate(candidate))
   }
 })
@@ -294,7 +472,7 @@ socket.on('ice-candidate', async ({ candidate }) => {
 // ================= declineCall =================
 const declineCall = async (callId) => {
   console.log("🚀 ~ declineCall ~ callId:", callId)
-  const res = await fetch('call/decline', {
+  const res = await fetch('/call/decline', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -307,17 +485,16 @@ const declineCall = async (callId) => {
 }
 
 socket.on('call-declined', ({ callId }) => {
-  
+
   console.log('Call declined by receiver');
 
   resetCallUI();
 
 })
 
-// ================= endCall =================
 const endCall = async (callId) => {
   console.log("🚀 ~ endCall ~ callId:", callId)
-  const res = await fetch('call/end', {
+  const res = await fetch('/call/end', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'

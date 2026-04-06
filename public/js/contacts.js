@@ -15,6 +15,44 @@ class contactLoader {
 
     async init() {
         await this.loadRecentChats()
+        this.setupSearch();
+    }
+
+    setupSearch() {
+        const searchInput = document.getElementById('searchText');
+        let searchTimeout;
+
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                const term = e.target.value.trim().toLowerCase();
+                
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(async () => {
+                    const activeTab = document.querySelector('.tab.active-tab');
+                    const isContactTab = activeTab && activeTab.innerText.trim().toLowerCase() === 'contact';
+                    
+                    if (term === '') {
+                        if (isContactTab) {
+                            this.loadContacts();
+                        } else {
+                            this.loadRecentChats();
+                        }
+                        return;
+                    }
+                    
+                    try {
+                        const res = await fetch(`/profile/search?name=${encodeURIComponent(term)}`);
+                        const result = await res.json();
+                        
+                        if (result.status === 1) {
+                            this.renderContacts(result.data, isContactTab ? 'contact' : 'chat');
+                        }
+                    } catch (err) {
+                        console.error('Error searching users via API:', err);
+                    }
+                }, 300);
+            });
+        }
     }
 
     async loadRecentChats(){
@@ -203,6 +241,18 @@ class contactLoader {
 
         if (msg.messageType === 'document') {
             return `<a href="${msg.fileUrl}" target="_blank"> ${msg.fileName}</a>`
+        }
+
+        if (msg.messageType === 'call_log') {
+            const contentLower = msg.content.toLowerCase();
+            const isMissedOrDeclined = contentLower.includes('missed') || contentLower.includes('cancelled') || contentLower.includes('declined');
+            const iconColor = isMissedOrDeclined ? '#d9534f' : '#5cb85c';
+            return `
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <i class="fa fa-phone" style="color: ${iconColor}; font-size: 1.2em;"></i>
+                    <strong style="color: #444;">${msg.content}</strong>
+                </div>
+            `;
         }
 
         return
