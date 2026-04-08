@@ -230,22 +230,36 @@
       </div>
       <!-- Heading End -->
 
+
+
+
+
+
         <!-- Message Box -->
         <div class="row message" id="conversation">
-          <div class="row message-body">
-            <div class="col-sm-12 message-main-receiver">
+          <div class="row message-body" id="chatsection">
+            
+            <!-- Example of dynamic date divider (added by JS) -->
+            <!-- 
+            <div class="date-divider">
+              <span>Today</span>
+            </div> 
+            -->
+
+            <!-- Example Message -->
+            <!-- <div class="col-sm-12 message-main-receiver">
               <div class="receiver">
                 <div class="message-text">
                  Hyy, Its Awesome..!
                 </div>
                 <span class="message-time pull-right">
-                  Sun
+                  12:45 PM
                 </span>
               </div>
-            </div>
+            </div> -->
           </div>
 
-          <div class="row message-body">
+          <!-- <div class="row message-body">
             <div class="col-sm-12 message-main-sender">
               <div class="sender">
                 <div class="message-text">
@@ -257,16 +271,25 @@
               </div>
             </div>
           </div>  
+           -->
+           <!-- typing Indicator -->
+           <div id="typingIndicator" class="typingIndicator">
+   
+           </div>
+
+          </div>
+          <!-- Message Box End -->
+          <!-- file preview -->
+          <div id="filePreview" style="display:none; position:absolute; bottom: 70px; left: 15px; z-index: 1000; background: #fff; padding: 10px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+          
         </div>
-        <!-- Message Box End -->
+        
         
 
- 
-        <!-- typing Indicator -->
-        <div id="typingIndicator" class="typingIndicator">
 
-        </div>
 
+
+   
 
 
 
@@ -290,6 +313,7 @@
           </div>
 
 
+          
           <div class="col-sm-1 col-xs-1 reply-send">
               <i id="sendBtn" class="fa fa-send fa-2x" aria-hidden="true"></i>
           </div>

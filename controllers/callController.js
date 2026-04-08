@@ -120,7 +120,7 @@ const initiateCall = async (req, res) => {
                         receiverId: call.receiverId,
                         content: 'Missed Call',
                         messageType: 'call_log',
-                        callType : call.callType
+                        callType: call.callType
                     });
                     const populatedLog = await messageModel.findById(logMessage.id).populate('senderId', 'id name profilePhoto').populate('receiverId', 'id name profilePhoto');
                     io.to(call.initiatorId.toString()).emit('receive-message', populatedLog);
@@ -274,8 +274,8 @@ const declineCall = async (req, res) => {
             senderId: call.initiatorId,
             receiverId: call.receiverId,
             content: 'Call Declined',
-            messageType: 'call_log',            
-            callType : call.callType
+            messageType: 'call_log',
+            callType: call.callType
         });
         const populatedLog = await messageModel.findById(logMessage.id).populate('senderId', 'id name profilePhoto').populate('receiverId', 'id name profilePhoto');
 
@@ -332,7 +332,7 @@ const endCall = async (req, res) => {
                 receiverId: call.receiverId,
                 content: 'Call Cancelled',
                 messageType: 'call_log',
-                callType : call.callType
+                callType: call.callType
             });
             const populatedLog = await messageModel.findById(logMessage.id).populate('senderId', 'id name profilePhoto').populate('receiverId', 'id name profilePhoto');
             io.to(call.initiatorId.toString()).emit('receive-message', populatedLog);
@@ -398,7 +398,7 @@ const endCall = async (req, res) => {
                 receiverId: call.receiverId,
                 content: `Call Ended (${durationStr})`,
                 messageType: 'call_log',
-                callType : call.callType
+                callType: call.callType
             });
             const populatedLog = await messageModel.findById(logMessage.id).populate('senderId', 'id name profilePhoto').populate('receiverId', 'id name profilePhoto');
             io.to(call.initiatorId.toString()).emit('receive-message', populatedLog);

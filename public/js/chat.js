@@ -8,9 +8,64 @@ console.log("Frontend Login userId:", userId, userId.length);
 // It's Login User Join Room
 socket.emit('join-room', userId)
 
-const conversation = document.getElementById('conversation');
+const chatsection = document.getElementById('chatsection');
+const messageContainer = document.getElementById('conversation');
 const message = document.getElementById('messageInput')
 const fileInput = document.getElementById('fileInput')
+
+fileInput.addEventListener('change', handleFilePreview)
+
+function handleFilePreview() {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  const preview = document.getElementById('filePreview');
+  preview.innerHTML = "";
+
+  const wrapper = document.createElement('div');
+  wrapper.style.display = "flex";
+  wrapper.style.alignItems = "start";
+  wrapper.style.gap = "10px";
+  wrapper.style.maxWidth = "200px";
+
+  // IMAGE
+  if (file.type.startsWith("image/")) {
+    const img = document.createElement('img');
+    img.src = URL.createObjectURL(file);
+    img.style.width = "120px";
+    img.style.borderRadius = "10px";
+    wrapper.appendChild(img);
+  } 
+  // VIDEO
+  else if (file.type.startsWith("video/")) {
+    const video = document.createElement('video');
+    video.src = URL.createObjectURL(file);
+    video.style.width = "150px";
+    video.controls = true;
+    wrapper.appendChild(video);
+  } 
+  // OTHER FILE
+  else {
+    wrapper.innerHTML = `📄 ${file.name}`;
+  }
+
+  // ❌ cancel button
+  const cancel = document.createElement('span');
+  cancel.innerHTML = " ❌";
+  cancel.style.cursor = "pointer";
+  cancel.onclick = () => {
+    fileInput.value = "";
+    preview.innerHTML = "";
+    preview.style.display = "none";
+  };
+
+  wrapper.appendChild(cancel);
+  preview.appendChild(wrapper);
+
+  preview.style.display = "block";
+}
+
+
 const sendBtn = document.getElementById('sendBtn')
 
 // typing
@@ -58,19 +113,32 @@ socket.on('displayTyping', ({ senderId }) => {
 
   console.log("🚀 ~ typingIndicator After Condition:", typingIndicator)
 
-  typingIndicator.innerHTML = '<p> typing... </p>'
-// typingIndicator.style.display = 'block'
+  typingIndicator.innerHTML = `
+    <div style="padding:5px 10px;">
+      <i>Typing...</i>
+    </div>
+  `;
 
+  // Auto scroll to show typing indicator
+  if (messageContainer) {
+    const isNearBottom = messageContainer.scrollTop + messageContainer.clientHeight >= messageContainer.scrollHeight - 60;
+    if (isNearBottom) {
+      setTimeout(() => {
+        messageContainer.scrollTop = messageContainer.scrollHeight;
+      }, 50);
+    }
+  }
 })
 
 // hide typing
 socket.on('hide_typing', ({ senderId }) => {
-    const currentChatUser = window.contactLoader.receiverId
+  const currentChatUser = window.contactLoader.receiverId;
 
-    if(senderId === currentChatUser){
-        typingIndicator.innerHTML = ''
-    }
-}) 
+  if (senderId === currentChatUser) {
+    const typingIndicator = document.getElementById('typingIndicator');
+    if (typingIndicator) typingIndicator.innerHTML = '';
+  }
+});
 
 
 
@@ -106,6 +174,10 @@ sendBtn.addEventListener('click', async () => {
 
     message.value = "";
     fileInput.value = ''
+
+    const preview = document.getElementById('filePreview');
+    preview.innerHTML = "";
+    preview.style.display = "none";
 
   } catch(err){
     console.error('error send message', err)
@@ -146,7 +218,32 @@ function updateRecentChat(message) {
     const msgDiv = chatRow.querySelector('.sideBar-message');
     if (msgDiv) msgDiv.innerText = previewText;
 
-    // container.prepend(chatRow); // move to top
+    // update time
+    const timeDiv = chatRow.querySelector('.time-meta');
+    if (timeDiv) {
+      const formatSidebarTime = (dateString) => {
+        const date = new Date(dateString);
+        const today = new Date();
+        const yesterday = new Date();
+        yesterday.setDate(today.getDate() - 1);
+
+        if (date.toDateString() === today.toDateString()) {
+          return date.toLocaleString('en-In', { hour: '2-digit', minute: '2-digit', hour12: true });
+        } else if (date.toDateString() === yesterday.toDateString()) {
+          return "Yesterday";
+        } else {
+          return date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+      };
+
+      const time = message.created_at
+        ? formatSidebarTime(message.created_at)
+        : '';
+      timeDiv.innerText = time;
+    }
+
+
+    container.prepend(chatRow); // move to top
   }
 }
 
@@ -185,6 +282,7 @@ socket.on('receive-message', (message) => {
   // If Message Sender is login user then senderUI Print in conversation area
   // else Message sender is click user then receiverUI Print
 
+  // live chat section print
   // chat area
   const renderContent = () => {
 
@@ -215,7 +313,6 @@ socket.on('receive-message', (message) => {
 
   const messageHTML = isSender
       ?`
-      <div class="row message-body">
         <div class="col-sm-12 message-main-sender">
           <div class="sender">
             <div class="message-text">${renderContent()}</div>
@@ -223,11 +320,9 @@ socket.on('receive-message', (message) => {
                 ${messageTime}
               </span>
           </div>
-          </div>
-      </div>
+        </div>
       `
       : `
-      <div class="row message-body">
         <div class="col-sm-12 message-main-receiver">
           <div class="receiver">
             <div class="message-text">${renderContent()}</div>
@@ -236,15 +331,45 @@ socket.on('receive-message', (message) => {
             </span>
           </div>
         </div>
-      </div>
       `
-    const isNearBottom = conversation.scrollTop + conversation.clientHeight >= conversation.scrollHeight - 50;
+    const isNearBottom = messageContainer.scrollTop + messageContainer.clientHeight >= messageContainer.scrollHeight - 50;
 
-    // conversation.insertAdjacentHTML('beforeend', messageHTML);
-    conversation.innerHTML += messageHTML;
+    const msgDateVal = new Date(message.created_at).toDateString();
+    
+    // Check the last inserted date divider
+    const dateDividers = chatsection.querySelectorAll('.date-divider');
+    let needsDivider = true;
+    if (dateDividers.length > 0) {
+        const lastDividerDate = dateDividers[dateDividers.length - 1].getAttribute('data-date');
+        if (lastDividerDate === msgDateVal) {
+            needsDivider = false;
+        }
+    }
+
+    if (needsDivider) {
+        const date = new Date(message.created_at);
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        let msgDateLabel = "";
+        if (date.toDateString() === today.toDateString()) {
+            msgDateLabel = "Today";
+        } else if (date.toDateString() === yesterday.toDateString()) {
+            msgDateLabel = "Yesterday";
+        } else {
+            msgDateLabel = date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+        
+        const dateDividerHTML = `<div class="date-divider" data-date="${msgDateVal}"><span>${msgDateLabel}</span></div>`;
+        chatsection.insertAdjacentHTML('beforeend', dateDividerHTML);
+    }
+
+    chatsection.insertAdjacentHTML('beforeend', messageHTML);
 
   if (isNearBottom) {
-    conversation.scrollTop = conversation.scrollHeight;
+    messageContainer.scrollTop = messageContainer.scrollHeight;
   }
 
 })
+

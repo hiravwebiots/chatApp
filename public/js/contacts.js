@@ -7,9 +7,13 @@ class contactLoader {
             console.error('contactList not found')
         }
 
-        this.conversation = document.getElementById('conversation')
+        this.conversation = document.getElementById('chatsection')
+        this.messageContainer = document.getElementById('conversation')
         if(!this.conversation){
             console.error('conversation not found')
+        }
+        if(!this.messageContainer){
+            console.error('messageContainer not found')
         }
     }
 
@@ -55,6 +59,8 @@ class contactLoader {
         }
     }
 
+    // chat tab
+    // fetch recent chat user from api
     async loadRecentChats(){
         try{
             const res = await fetch('/message/recent-chat')
@@ -74,6 +80,7 @@ class contactLoader {
         }
     }
 
+    // contact tab
     // Fetch user from API
     async loadContacts(){
         try{
@@ -92,20 +99,54 @@ class contactLoader {
         }
     }   
 
-    renderContacts(users, type = 'chat'){
+    
+    async renderContacts(users, type = 'chat'){
         console.log('In renderContacts');
                 
         const container = type === 'chat' ? this.chatList : this.contactList
         console.log("🚀 ~ contactLoader ~ renderContacts ~ container:", container)
 
+        
+
         container.innerHTML = ""
+
+        const formatSidebarTime = (dateString) => {
+            const date = new Date(dateString);
+            const today = new Date();
+            const yesterday = new Date();
+            yesterday.setDate(today.getDate() - 1);
+
+            if (date.toDateString() === today.toDateString()) {
+                return date.toLocaleString('en-In', { hour: '2-digit', minute: '2-digit', hour12: true });
+            } else if (date.toDateString() === yesterday.toDateString()) {
+                return "Yesterday";
+            } else {
+                return date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            }
+        };
 
         users.forEach(user => {
             const div = document.createElement("div");
             div.className = "row sideBar-body";
 
-            // “Find user row by ID” → found instantly 
+            // "Find user row by ID" -> found instantly 
             div.setAttribute("data-user-id", user.id);
+
+            const lastMessageTime = user.lastMessage?.created_at
+                ? formatSidebarTime(user.lastMessage.created_at)
+                : '';
+
+            let previewText = '';
+            if (user.lastMessage) {
+                const msg = user.lastMessage;
+                if (msg.messageType === 'text') previewText = msg.content || '';
+                else if (msg.messageType === 'image') previewText = '📷 Photo';
+                else if (msg.messageType === 'video') previewText = '🎥 Video';
+                else if (msg.messageType === 'audio') previewText = '🎵 Audio';
+                else if (msg.messageType === 'document') previewText = '📄 Document';
+                else if (msg.messageType === 'call_log') previewText = msg.content || '';
+                else previewText = msg.content || '';
+            }
 
             div.innerHTML = `
                 <div class="col-sm-3 col-xs-3 sideBar-avatar">
@@ -116,15 +157,15 @@ class contactLoader {
 
                 <div class="col-sm-9 col-xs-9 sideBar-main">
                     <div class="sideBar-name name-meta">
-                        ${user.name}
+                        <span class="user-name">${user.name}</span>
+                        <span class="time-meta">${lastMessageTime}</span>
                     </div>
+                <div class="sideBar-message">
+                    ${previewText}
                 </div>
-                
-            <div class=" sideBar-message">
-                ${user.lastMessage?.content || ''}
-            </div>
-                `
-                
+                </div>
+            `
+            
             // why use typr = chat
             div.addEventListener("click", () => {
                 this.openChat(user)
@@ -147,7 +188,7 @@ class contactLoader {
         const imgEl = document.querySelector(".conversation .heading-avatar-icon img")
         imgEl.src = user.profilePhoto    
 
-        const chatBox = document.getElementById("conversation")
+        const chatBox = document.getElementById("chatsection")
 
         // If chat not then this print 
         chatBox.innerHTML = `
@@ -189,10 +230,41 @@ class contactLoader {
 
     }
 
+    // display in chatBox section
     renderChats(chats){
-    this.conversation.innerHTML = ""
+    const container = document.getElementById('chatsection');
+    container.innerHTML = "";
+
+    const getDateLabel = (dateString) => {
+        const date = new Date(dateString);
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        if (date.toDateString() === today.toDateString()) {
+            return "Today";
+        } else if (date.toDateString() === yesterday.toDateString()) {
+            return "Yesterday";
+        } else {
+            return date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }); // DD/MM/YYYY
+        }
+    };
+
+    let lastRenderedDate = null;
 
     chats.forEach(msg => {
+        const msgDateVal = new Date(msg.created_at).toDateString();
+        
+        if (msgDateVal !== lastRenderedDate) {
+            const msgDateLabel = getDateLabel(msg.created_at);
+            const dateDiv = document.createElement('div');
+            dateDiv.className = 'date-divider';
+            dateDiv.setAttribute('data-date', msgDateVal);
+            dateDiv.innerHTML = `<span>${msgDateLabel}</span>`;
+            container.appendChild(dateDiv);
+            lastRenderedDate = msgDateVal;
+        }
+
         const chatDiv = document.createElement('div')
         chatDiv.classList.add("row", "message-body")
 
@@ -258,6 +330,7 @@ class contactLoader {
             })
         }
 
+        // while load history that time this
         const messageTime = formatTime(msg.created_at);
         console.log("🚀 ~ contactLoader ~ renderChats ~ messageTime:", messageTime)
 
@@ -278,13 +351,15 @@ class contactLoader {
             //          ${new Date(chat.createdAt).toLocaleTimeString()}
             //    </span>
 
-        this.conversation.appendChild(chatDiv)
+        container.appendChild(chatDiv)
     })
 
     // If I read chat need auto scroll 
     // start with bottom and then top
 
-        this.conversation.scrollTop = this.conversation.scrollHeight
+        setTimeout(() => {
+            this.messageContainer.scrollTop = this.messageContainer.scrollHeight
+        }, 50);
 
     }
 }
