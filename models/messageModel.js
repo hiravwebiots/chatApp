@@ -25,6 +25,10 @@ const messageSchama = mongoose.Schema({
         type : String,
         enum : ['text', 'image','sticker', 'file', 'video', 'poll', 'document', 'audio', 'call_log'],
         default : 'text'
+    },
+    callType : {
+        type : String,
+        enum : ['audio', 'video'],
     }
 },{
     timestamps : {

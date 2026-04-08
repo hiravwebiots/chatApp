@@ -151,7 +151,16 @@ function updateRecentChat(message) {
 }
 
 
-// Send Messahe APi Call and DB Store Message
+// time formate change with hours and miniti
+function formatTime(date){
+  return new Date(date).toLocaleString('en-In', {
+    hour : '2-digit',
+    minute : '2-digit',
+    hour12 : true
+  })
+}
+
+// Send Message APi Call and DB Store Message
 // Server emit message to Sender and reciver
 // here receive message just show in different UI
 socket.on('receive-message', (message) => {
@@ -175,6 +184,8 @@ socket.on('receive-message', (message) => {
 
   // If Message Sender is login user then senderUI Print in conversation area
   // else Message sender is click user then receiverUI Print
+
+  // chat area
   const renderContent = () => {
 
     if (message.messageType === 'text') {
@@ -200,14 +211,19 @@ socket.on('receive-message', (message) => {
     return
   }
 
+  const messageTime = formatTime(message.created_at);
+
   const messageHTML = isSender
       ?`
       <div class="row message-body">
         <div class="col-sm-12 message-main-sender">
           <div class="sender">
             <div class="message-text">${renderContent()}</div>
+              <span class="message-time pull-right">
+                ${messageTime}
+              </span>
           </div>
-        </div>
+          </div>
       </div>
       `
       : `
@@ -215,6 +231,9 @@ socket.on('receive-message', (message) => {
         <div class="col-sm-12 message-main-receiver">
           <div class="receiver">
             <div class="message-text">${renderContent()}</div>
+            <span class="message-time pull-right">
+                  ${messageTime}
+            </span>
           </div>
         </div>
       </div>

@@ -18,13 +18,11 @@
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
 
-
-        <script src="/js/dashboard.js" defer></script>
+        <!-- <script src="/js/dashboard.js" defer></script> -->
         <script src="/js/main.js" defer></script>
         <script src="/js/contactChatTab.js" defer></script> 
         <script src="/js/contacts.js" defer></script>
         <script src="/socket.io/socket.io.js" defer></script>
-        <script src="/js/chatLoad.js" defer></script>
         <script src="/js/chat.js" defer></script> 
         <script src="/js/call.js" defer></script>
 
@@ -43,7 +41,8 @@
           <div class="row heading">
             <div class="col-sm-3 col-xs-3 heading-avatar">
               <div class="heading-avatar-icon img">
-                <img id="myImageId" src="<currentUser.profilePhoto>">    
+                <img id="myImageId" src="">    
+                <!-- <currentUser.profilePhoto> -->
               </div>
             </div>
             
@@ -208,7 +207,8 @@
         <div class="row heading">
           <div class="col-sm-2 col-md-1 col-xs-3 heading-avatar">
           <div class="heading-avatar-icon">
-          <img src="<user.profilePhoto>">            
+          <img src="">            
+          <!-- <user.profilePhoto> -->
         </div>
         </div>
 
@@ -326,7 +326,10 @@
         <div id="incomingCallUI" class="call-ui">
           <div class="call-card">
             
+            <div id="callType" class="callTypeMessage"></div>
+
             <div id="callErrorMessage" class="callErrMessage"></div>
+
 
             <div class="avatar" id="callAvatar">DM</div>
 
@@ -349,6 +352,7 @@
           </div>
         </div>
         
+        <!-- ringtone -->
         <audio id="myRingtone" loop>
           <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" type="audio/mpeg">
         </audio>
@@ -364,12 +368,43 @@
             <p class="call-status" id="callTimer">00:00</p>
             <!-- Controls -->
             <div class="call-actions">
-              <button id="muteBtn" class="circle-btn">🎤</button>
-              <button id="endCallBtn" class="circle-btn decline">📞</button>
+              <button id="muteAudioBtn" class="circle-btn">🎤</button>
+              <button id="endAudioCallBtn" class="circle-btn decline">📞</button>
             </div>
           </div>
         </div>
 
+
+
+
+        <!-- Video Call Screen -->
+        <div id="videoCallScreen" class="call-ui">
+          <div class="video-container">
+
+            <!-- Remote Video (Other User) -->
+            <video id="remoteVideo" autoplay playsinline></video>
+
+            <!-- Local Video (Your Camera - small preview) -->
+            <video id="localVideo" autoplay muted playsinline class="local-video"></video>
+
+            <!-- Top Info -->
+            <div class="video-header">
+              <div class="avatar" id="videoAvatar">DM</div>
+              <div>
+                <h3 id="videoUserName"></h3>
+                <p id="videoCallTimer">00:00</p>
+              </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="video-controls">
+              <button id="toggleVideoBtn" class="circle-btn">📷</button>
+              <button id="muteVideoBtn" class="circle-btn">🎤</button>
+              <button id="endVideoCallBtn" class="circle-btn decline">📞</button>
+            </div>
+
+          </div>
+        </div>
 
 
 </body>

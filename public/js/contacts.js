@@ -164,24 +164,6 @@ class contactLoader {
         console.log("🚀 ~ contactLoader ~ openChat ~ this.receiverId:", this.receiverId)
 
 
-        // It;s logic for Group
-
-        // // CREATE UNIQUE ROOM Between current login & user  
-        // const roomId = [currentUser.id, user.id].sort().join("_")
-
-        // // when click on user --> After Click Join room login & click user 
-        // console.log("Befor Click");
-
-        // // room join event on
-        // socket.on('join-room', user.id)
-
-        // console.log("when click on user --> After Click Join room login & click user" )
-        
-        
-        
-        // this.roomId = roomId
-        // console.log("🚀 ~ contactLoader ~ openChat ~ this.roomId:", this.roomId)
-
         try{
             const res = await fetch(`/message/read/${this.receiverId}`)
             const result = await res.json()
@@ -221,44 +203,63 @@ class contactLoader {
         console.log("who id msg sender :", isSender);
         
 
-    const renderContent = () => {
+        const renderContent = () => {
 
-        if (msg.messageType === 'text') {
-            return `<p>${msg.content}</p>`
+            if (msg.messageType === 'text') {
+                return `<p>${msg.content}</p>`
+            }
+
+            if (msg.messageType === 'image') {
+                return `<img src="${msg.fileUrl}" width="200" style="border-radius:10px;" />`
+            }
+
+            if (msg.messageType === 'video') {
+                return `<video src="${msg.fileUrl}" controls width="200"></video>`
+            }
+
+            if (msg.messageType === 'audio') {
+                return `<audio src="${msg.fileUrl}" controls></audio>`
+            }
+
+            if (msg.messageType === 'document') {
+                return `<a href="${msg.fileUrl}" target="_blank"> ${msg.fileName}</a>`
+            }
+
+            if (msg.messageType === 'call_log') {
+                const contentLower = msg.content.toLowerCase();
+                const isMissedOrDeclined = contentLower.includes('missed') || contentLower.includes('cancelled') || contentLower.includes('declined');
+                const iconColor = isMissedOrDeclined ? '#d9534f' : '#5cb85c';      
+
+                let iconClass = 'fa-phone'; // default audio
+
+                if(msg.callType === 'video'){
+                    iconClass = 'fa-video-camera'
+                } else if(msg.callType === 'audio'){
+                    iconClass = 'fa-phone'
+                }
+        
+                return `
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <i class="fa ${iconClass}" style="color: ${iconColor}; font-size: 1.2em;"></i>
+                        <strong style="color: #444;">${msg.content}</strong>
+                    </div>
+                `;
+            }
+
+            return ''
+
         }
 
-        if (msg.messageType === 'image') {
-            return `<img src="${msg.fileUrl}" width="200" style="border-radius:10px;" />`
+        function formatTime(date){
+            return new Date(date).toLocaleString('en-In', {
+                hour : '2-digit',
+                minute : '2-digit',
+                hour12 : true
+            })
         }
 
-        if (msg.messageType === 'video') {
-            return `<video src="${msg.fileUrl}" controls width="200"></video>`
-        }
-
-        if (msg.messageType === 'audio') {
-            return `<audio src="${msg.fileUrl}" controls></audio>`
-        }
-
-        if (msg.messageType === 'document') {
-            return `<a href="${msg.fileUrl}" target="_blank"> ${msg.fileName}</a>`
-        }
-
-        if (msg.messageType === 'call_log') {
-            const contentLower = msg.content.toLowerCase();
-            const isMissedOrDeclined = contentLower.includes('missed') || contentLower.includes('cancelled') || contentLower.includes('declined');
-            const iconColor = isMissedOrDeclined ? '#d9534f' : '#5cb85c';
-            return `
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <i class="fa fa-phone" style="color: ${iconColor}; font-size: 1.2em;"></i>
-                    <strong style="color: #444;">${msg.content}</strong>
-                </div>
-            `;
-        }
-
-        return
-    }
-
-
+        const messageTime = formatTime(msg.created_at);
+        console.log("🚀 ~ contactLoader ~ renderChats ~ messageTime:", messageTime)
 
         chatDiv.innerHTML = `
             <div class="col-sm-12 ${isSender ? 'message-main-sender' : 'message-main-receiver'}">
@@ -266,6 +267,9 @@ class contactLoader {
                     <div class="message-text">
                         ${renderContent()}
                     </div>
+                    <span class="message-time pull-right">
+                        ${messageTime}
+                    </span>
                 </div>
             </div>
         `

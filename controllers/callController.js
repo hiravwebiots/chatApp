@@ -119,7 +119,8 @@ const initiateCall = async (req, res) => {
                         senderId: call.initiatorId,
                         receiverId: call.receiverId,
                         content: 'Missed Call',
-                        messageType: 'call_log'
+                        messageType: 'call_log',
+                        callType : call.callType
                     });
                     const populatedLog = await messageModel.findById(logMessage.id).populate('senderId', 'id name profilePhoto').populate('receiverId', 'id name profilePhoto');
                     io.to(call.initiatorId.toString()).emit('receive-message', populatedLog);
@@ -258,7 +259,7 @@ const declineCall = async (req, res) => {
         })
 
         sendParticipant.status = 'outgoing_declined'
-        sendParticipant.save()
+        await sendParticipant.save()
 
         // await callModel.findByIdAndUpdate(
         //     { id : call.id },
@@ -273,7 +274,8 @@ const declineCall = async (req, res) => {
             senderId: call.initiatorId,
             receiverId: call.receiverId,
             content: 'Call Declined',
-            messageType: 'call_log'
+            messageType: 'call_log',            
+            callType : call.callType
         });
         const populatedLog = await messageModel.findById(logMessage.id).populate('senderId', 'id name profilePhoto').populate('receiverId', 'id name profilePhoto');
 
@@ -329,7 +331,8 @@ const endCall = async (req, res) => {
                 senderId: call.initiatorId,
                 receiverId: call.receiverId,
                 content: 'Call Cancelled',
-                messageType: 'call_log'
+                messageType: 'call_log',
+                callType : call.callType
             });
             const populatedLog = await messageModel.findById(logMessage.id).populate('senderId', 'id name profilePhoto').populate('receiverId', 'id name profilePhoto');
             io.to(call.initiatorId.toString()).emit('receive-message', populatedLog);
@@ -364,7 +367,7 @@ const endCall = async (req, res) => {
             const endTime = new Date()
 
             const duration = call.acceptedTime
-                ? Math.floor((endTime - call.acceptedTime) / 1000) // in second
+                ? Math.max(0, Math.floor((endTime - call.acceptedTime) / 1000)) // in second
                 : 0;
 
             await callModel.findByIdAndUpdate(callId, {
@@ -389,11 +392,13 @@ const endCall = async (req, res) => {
             const durationStr = `${minutes > 0 ? minutes + 'm ' : ''}${seconds}s`;
 
             // Create ended log in message model
+            console.log("🚀 ~ endCall ~ call.callType:", call.callType)
             const logMessage = await messageModel.create({
                 senderId: call.initiatorId,
                 receiverId: call.receiverId,
                 content: `Call Ended (${durationStr})`,
-                messageType: 'call_log'
+                messageType: 'call_log',
+                callType : call.callType
             });
             const populatedLog = await messageModel.findById(logMessage.id).populate('senderId', 'id name profilePhoto').populate('receiverId', 'id name profilePhoto');
             io.to(call.initiatorId.toString()).emit('receive-message', populatedLog);

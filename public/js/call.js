@@ -3,7 +3,7 @@ let isCaller = false
 let peerConnection
 let localStream
 let currentReceiverId
-let currentCallType = 'audio';
+let currentCallType = '';
 let currentChatUserName = '';
 let currentChatUserAvatar = '';
 
@@ -16,11 +16,10 @@ const configuration = {
 
 // ================= RESER UI =================
 function resetCallUI() {
-    stopRingtone()
- 
+  stopRingtone()
+
   currentCallId = null;
   isCaller = false;
-  currentCallType = 'audio';
   currentChatUserName = '';
   currentChatUserAvatar = '';
 
@@ -30,8 +29,17 @@ function resetCallUI() {
     errEl.style.display = 'none';
     errEl.innerText = '';
   }
+
+  const callTypeEl = document.getElementById('callType');
+  if (callTypeEl) {
+    callTypeEl.innerText = '';
+  }
+
   const cs = document.getElementById('callScreen');
   if (cs) cs.style.display = 'none';
+
+  const vcs = document.getElementById('videoCallScreen');
+  if (vcs) vcs.style.display = 'none';
 
   if (localStream) {
     localStream.getTracks().forEach(track => track.stop());
@@ -66,6 +74,10 @@ function updateTimerUI() {
   if (timerEl) {
     timerEl.innerText = `${min}:${sec}`;
   }
+  const videoTimerEl = document.getElementById('videoCallTimer');
+  if (videoTimerEl) {
+    videoTimerEl.innerText = `${min}:${sec}`;
+  }
 }
 
 function stopCallTimer() {
@@ -77,25 +89,43 @@ function stopCallTimer() {
   if (timerEl) {
     timerEl.innerText = "00:00";
   }
+  const videoTimerEl = document.getElementById('videoCallTimer');
+  if (videoTimerEl) {
+    videoTimerEl.innerText = "00:00";
+  }
 }
 
 function showCallScreen() {
   document.getElementById('incomingCallUI').style.display = 'none';
-  const cs = document.getElementById('callScreen');
-  if (cs) {
-    cs.style.display = 'flex';
-    document.getElementById('inCallName').innerText = currentChatUserName || 'Unknown';
-    if (currentChatUserAvatar) {
-      const avatarUrl = currentChatUserAvatar.startsWith('/') ? currentChatUserAvatar : '/' + currentChatUserAvatar;
-      document.getElementById('inCallAvatar').innerHTML = `<img src="${avatarUrl}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
-    } else {
-      document.getElementById('inCallAvatar').innerHTML = 'DM';
+
+  if (currentCallType === 'video') {
+    const vcs = document.getElementById('videoCallScreen');
+    if (vcs) {
+      vcs.style.display = 'flex';
+      document.getElementById('videoUserName').innerText = currentChatUserName || 'Unknown';
+      if (currentChatUserAvatar) {
+        const avatarUrl = currentChatUserAvatar.startsWith('/') ? currentChatUserAvatar : '/' + currentChatUserAvatar;
+        document.getElementById('videoAvatar').innerHTML = `<img src="${avatarUrl}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+      } else {
+        document.getElementById('videoAvatar').innerHTML = 'DM';
+      }
+    }
+  } else {
+    // audio call ui
+    const cs = document.getElementById('callScreen');
+    if (cs) {
+      cs.style.display = 'flex';
+      document.getElementById('inCallName').innerText = currentChatUserName || 'Unknown';
+      if (currentChatUserAvatar) {
+        const avatarUrl = currentChatUserAvatar.startsWith('/') ? currentChatUserAvatar : '/' + currentChatUserAvatar;
+        document.getElementById('inCallAvatar').innerHTML = `<img src="${avatarUrl}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+      } else {
+        document.getElementById('inCallAvatar').innerHTML = 'DM';
+      }
     }
   }
+
   startCallTimer();
-
-  // video call ui
-
 }
 // ======================================+++++
 
@@ -116,7 +146,7 @@ function unlockAudio() {
       isAudioUnlocked = true;
       console.log('Audio unlocked');
     })
-    .catch(() => {});
+    .catch(() => { });
 }
 
 // trigger on first user interaction
@@ -134,16 +164,16 @@ function playRingtone() {
   }
 }
 
-function stopRingtone(){
+function stopRingtone() {
   const audio = document.getElementById('myRingtone')
-  if(audio){
+  if (audio) {
     audio.pause()
     audio.currentTime = 0
   }
 }
 // ======================================+++++
 
-
+// sender side calling UI
 function showOutgoingCall(receiverName, receiverAvatar) {
   console.log('showOutgoingCall called');
 
@@ -204,6 +234,11 @@ async function startMedia() {
     audio: true,
     video: isVideo
   })
+
+  const videoTracks = localStream.getVideoTracks();
+  
+console.log("Video Tracks:", videoTracks);
+
 
   let localVideo = document.getElementById('localVideo')
   if (!localVideo) {
@@ -303,7 +338,7 @@ const initiateCall = async (receiverId, callType, receiverName, receiverAvatar) 
     document.getElementById('acceptBtn').style.display = 'none';
     document.getElementById('declineBtn').style.display = 'none';
     document.getElementById('callStatus').innerText = 'Call Failed';
-    
+
     setTimeout(() => {
       resetCallUI();
     }, 5000);
@@ -325,8 +360,6 @@ socket.on('call-incoming', (data) => {
   if (isCaller) return;
 
   console.log('Incoming Call : ', data);
-
-
   console.log("🚀 ~ callerName:", data.callerName)
 
   // Only reset if it's a completely different call
@@ -343,15 +376,23 @@ socket.on('call-incoming', (data) => {
 
   isCaller = false;
 
-  // Show the UI
+  // Show the UI from reciver side
   document.getElementById('incomingCallUI').style.display = 'flex';
 
-  currentCallType = data.callType || 'audio';
+  currentCallType = data.callType;
   currentChatUserName = data.callerName || 'Unknown';
   currentChatUserAvatar = data.callerAvatar || '';
 
+  if(currentCallType === 'audio'){
+    document.getElementById('callType').innerText = 'Audio Call'
+  } 
+  else if(currentCallType === 'video'){
+    document.getElementById('callType').innerText = 'Video Call'
+  }
+
   document.getElementById('callStatus').innerText = 'Incoming call...';
   document.getElementById('callerName').innerText = currentChatUserName;
+  console.log("🚀 ~ document.getElementById('callerName'):", document.getElementById('callerName'))
 
 
   if (currentChatUserAvatar) {
@@ -400,17 +441,23 @@ document.getElementById('declineBtn').addEventListener('click', async () => {
 });
 
 // ================= ENDCALL BUTTON =================
-document.getElementById('endCallBtn').addEventListener('click', async () => {
+const endCallHandler = async () => {
   const callIdToUse = currentCallId
-  
+
   console.log('endCall Button Clicked');
-  
+
   stopRingtone()
 
   await endCall(callIdToUse)
 
   resetCallUI()
-})
+};
+
+const endAudioCallBtn = document.getElementById('endAudioCallBtn');
+if (endAudioCallBtn) endAudioCallBtn.addEventListener('click', endCallHandler);
+
+const endVideoCallBtn = document.getElementById('endVideoCallBtn');
+if (endVideoCallBtn) endVideoCallBtn.addEventListener('click', endCallHandler);
 
 // ================= answerCall =================
 const answerCall = async (callId) => {

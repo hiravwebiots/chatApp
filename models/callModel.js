@@ -45,7 +45,7 @@ const callSchema = mongoose.Schema({
 },{
     timestamps : { 
         createdAt : 'created_at',
-        updatedAt : 'updated_at'
+        // updatedAt : 'updated_at'
     }
 })
 

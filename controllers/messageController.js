@@ -1,5 +1,6 @@
 const messageModel = require('../models/messageModel');
 const userModel = require('../models/userModel');
+const callModel = require
 
 // const sendMessage = async(req, res) => {  
 //     try{
@@ -280,6 +281,7 @@ const readMessagePersonalChat = async (req, res) => {
                 fileUrl : msg.fileUrl,
                 fileName : msg.fileName,
                 messageType : msg.messageType,
+                callType : msg.callType,
                 created_at : msg.created_at,
                 senderId : msg.senderId,
                 receiverId : msg.receiverId,
@@ -367,6 +369,7 @@ const getRecentChats = async (req, res) => {
         res.status(500).json({ status: 0, message: 'error while recent-messages' });
     }
 };
+
 
 module.exports = { sendMessage, readMessage, readMessagePersonalChat, getRecentChats }
 
