@@ -106,20 +106,16 @@ body {
 
 .heading-name-meta {
   font-weight: 700;
-  font-size: 100%;
-  padding-bottom: 10px;
-  text-align: left;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: 15px;
+  padding-top: 6px;
+  margin-bottom: 0;
   color: #000;
-  display: block;
 }
 
 .heading-online {
-  display: none;
-  padding: 0 5px;
+  display: block;
   font-size: 12px;
-  color: #93918f;
+  color: #667781;  
 }
 
 .heading-compose {
@@ -349,12 +345,12 @@ body {
   font-size: 13px;
   color: #667781;
 
-  white-space: nowrap;        /* ✅ single line */
-  overflow: hidden;           /* ✅ hide overflow */
-  text-overflow: ellipsis;    /* ✅ show ... */
+  white-space: nowrap;        
+  overflow: hidden;           
+  text-overflow: ellipsis;    
 
   width: 100%;
-  min-width: 0;               /* ✅ CRITICAL */
+  min-width: 0;               
 }
 
 
@@ -504,6 +500,7 @@ body {
   padding: 0 !important;
   margin: 0 !important;
   height: 100%;
+  /* background-color: ; */
   border-left: 1px solid rgba(0, 0, 0, .08);
   position: relative;
 }
@@ -612,74 +609,119 @@ body {
 }
 
 
-
-/*Reply*/
+/* Container flex fix for bootstrap row */
 .reply {
+  display: flex !important;
+  align-items: center;
+  background-color: #f0f2f5;
+  padding: 8px 10px;
   height: 60px;
-  width: 100%;
-  background-color: #f5f1ee;
-  padding: 10px 5px 10px 5px !important;
-  margin: 0 !important;
-  z-index: 1000;
+  margin-left: auto;
 }
 
+/* Emoji icon */
 .reply-emojis {
-  padding: 5px !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
 }
 
 .reply-emojis i {
-  text-align: center;
-  padding: 5px 5px 5px 5px !important;
-  color: #93918f;
-  cursor: pointer;
+  color: #54656f;
+  border-radius: 50%;
+  padding: 6px;
+  font-size: 24px;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.reply-recording {
-  padding: 5px !important;
+.reply-emojis i:hover {
+  background-color: #e4e6eb;
+  color: #111b21;
 }
 
-.reply-file {
-  text-align: center;
-  padding: 5px !important;
-  color: #93918f;
-  cursor: pointer;
-}
-
-.reply-send {
-  padding: 5px !important;
-}
-
-.reply-send i {
-  text-align: center;
-  padding: 5px !important;
-  color: #93918f;
-  cursor: pointer;
-}
-
+/* Textarea container */
 .reply-main {
-  padding: 2px 2px !important;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  background-color: #ffffff;
+  border-radius: 25px;
+  padding: 6px 15px;
+  height: 42px;
 }
 
-.reply-main textarea {
-  width: 90%;
+/* Textarea */
+.reply-main textarea.form-control {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  width: 100%;
   resize: none;
+  font-size: 15px;
+  background: transparent;
+  height: 28px;
+  line-height: 28px;
+  padding: 0;
+  margin: 0;
   overflow: hidden;
-  padding: 5px !important;
-  outline: none;
-  border: none;
-  text-indent: 5px;
-  box-shadow: none;
-  height: 100%;
-  font-size: 16px;
 }
 
-.reply-main textarea:focus {
-  outline: none;
-  border: none;
-  text-indent: 5px;
-  box-shadow: none;
+.reply-main textarea.form-control:focus {
+  box-shadow: none !important;
+  border: none !important;
 }
 
+/* File input container */
+.reply-recording {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.reply-recording label i {
+  color: #54656f;
+  font-size: 24px;
+  padding: 6px;
+  border-radius: 50%;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.reply-recording label i:hover {
+  background-color: #e4e6eb;
+  color: #111b21;
+}
+
+#fileInput {
+  display: none;
+}
+
+/* Send button container */
+.reply-send {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+/* Send icon style */
+.reply-send i {
+  background-color: #00a884;
+  color: white;
+  padding: 8px;
+  border-radius: 50%;
+  font-size: 24px;
+  transition: background-color 0.2s ease;
+}
+
+.reply-send i:hover {
+  background-color: #019874;
+}
+
+.reply-send i:active {
+  transform: scale(0.9);
+}
 
 @media screen and (max-width: 700px) {
   .app {

@@ -1,12 +1,44 @@
-// Add these at the top of chat.js
 const socket = io()
+let currentChatUserId = null
+
 
 // It's Login User
 console.log("Frontend Login userId:", userId, userId.length);
 
+// Still not working, I want to if user login than display to all this user online to everyone, first user join then see all status but third user can't show first and second user if user offline than display the last seen time not a 'ofline'
 
 // It's Login User Join Room
 socket.emit('join-room', userId)
+socket.on('user-status', (data) => {
+  console.log("STATUS UPDATE:", data)
+
+  if (data.userId === currentChatUserId) {
+    const statusEl = document.querySelector(".heading-online")
+
+    if (statusEl) {
+      if (data.isOnline) {
+        statusEl.textContent = "Online";
+        statusEl.style.color = "green";
+      } else {
+        let text = "Offline";
+        if (data.lastSeen) {
+          const date = new Date(data.lastSeen);
+          text = `Last seen at ${date.toLocaleString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true, day: 'numeric', month: 'short' })}`;
+        }
+        statusEl.textContent = text;
+        statusEl.style.color = "gray";
+      }
+    }
+  }
+
+  const sidebarNodes = document.querySelectorAll(`[data-user-id="${data.userId}"]`);
+  sidebarNodes.forEach(node => {
+    node.setAttribute('data-is-online', data.isOnline);
+    if (data.lastSeen) {
+      node.setAttribute('data-last-seen', data.lastSeen);
+    }
+  });
+})
 
 const chatsection = document.getElementById('chatsection');
 const messageContainer = document.getElementById('conversation');
@@ -35,7 +67,7 @@ function handleFilePreview() {
     img.style.width = "120px";
     img.style.borderRadius = "10px";
     wrapper.appendChild(img);
-  } 
+  }
   // VIDEO
   else if (file.type.startsWith("video/")) {
     const video = document.createElement('video');
@@ -43,7 +75,7 @@ function handleFilePreview() {
     video.style.width = "150px";
     video.controls = true;
     wrapper.appendChild(video);
-  } 
+  }
   // OTHER FILE
   else {
     wrapper.innerHTML = `📄 ${file.name}`;
@@ -72,25 +104,25 @@ const sendBtn = document.getElementById('sendBtn')
 let typingTimeout
 
 message.addEventListener('input', () => {
-    const receiverId = window.contactLoader.receiverId
-    if(!receiverId) return
+  const receiverId = window.contactLoader.receiverId
+  if (!receiverId) return
 
-    // emit typing
-    socket.emit('typing', { 
-      senderId : userId,
+  // emit typing
+  socket.emit('typing', {
+    senderId: userId,
+    receiverId
+  })
+
+  // clear previous timout
+  clearTimeout(typingTimeout)
+
+  // stop typing evnt after 8s
+  typingTimeout = setTimeout(() => {
+    socket.emit('stop-typing', {
+      senderId: userId,
       receiverId
-     })
-
-    // clear previous timout
-    clearTimeout(typingTimeout)
-
-    // stop typing evnt after 8s
-    typingTimeout = setTimeout(() => {
-      socket.emit('stop-typing', { 
-        senderId : userId,
-        receiverId
-       })
-    }, 1000)
+    })
+  }, 1000)
 })
 
 let typingDisplayTimeout
@@ -99,15 +131,15 @@ let typingDisplayTimeout
 socket.on('displayTyping', ({ senderId }) => {
 
   console.log('event recieve');
-  
+
   const currentChatUser = window.contactLoader.receiverId
-  
-  if(senderId !== currentChatUser) return
-  
+
+  if (senderId !== currentChatUser) return
+
   const typingIndicator = document.getElementById('typingIndicator')
 
-  if(!typingIndicator){ 
-    console.log('typingIndicator not found' );  
+  if (!typingIndicator) {
+    console.log('typingIndicator not found');
     return
   }
 
@@ -144,31 +176,31 @@ socket.on('hide_typing', ({ senderId }) => {
 
 // send Btn Click
 sendBtn.addEventListener('click', async () => {
-  try{
-    
-    if(!message.value && !fileInput.files[0]) return
+  try {
+
+    if (!message.value && !fileInput.files[0]) return
 
     console.log("🚀 ~ receiverId:", window.contactLoader.receiverId)
-    console.log("🚀 ~ content:", message.value)  
+    console.log("🚀 ~ content:", message.value)
 
     const formData = new FormData()
     formData.append('receiverId', window.contactLoader.receiverId)
     formData.append('content', message.value)
 
-    if(fileInput.files[0]){
+    if (fileInput.files[0]) {
       formData.append('file', fileInput.files[0])
     }
 
     const res = await fetch('/message/send', {
-      method : 'POST', 
+      method: 'POST',
       // headers: {
       //   'Content-Type': 'application/json'
       // },
       body: formData
     })
-    
+
     console.log("🚀 ~ res:", res)
-    
+
     const data = await res.json()
     console.log("🚀 ~ data:", data)
 
@@ -179,7 +211,7 @@ sendBtn.addEventListener('click', async () => {
     preview.innerHTML = "";
     preview.style.display = "none";
 
-  } catch(err){
+  } catch (err) {
     console.error('error send message', err)
   }
 })
@@ -194,8 +226,8 @@ function updateRecentChat(message) {
   // only process if message belongs to me
   if (sender !== userId && receiver !== userId) return;
 
-// If I sent → other = receiver
-// If I received → other = sender
+  // If I sent → other = receiver
+  // If I received → other = sender
   const otherUserId = sender === userId ? receiver : sender;
   console.log("🚀 ~ updateRecentChat ~ otherUserId:", otherUserId)
 
@@ -249,11 +281,11 @@ function updateRecentChat(message) {
 
 
 // time formate change with hours and miniti
-function formatTime(date){
+function formatTime(date) {
   return new Date(date).toLocaleString('en-In', {
-    hour : '2-digit',
-    minute : '2-digit',
-    hour12 : true
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
   })
 }
 
@@ -261,23 +293,23 @@ function formatTime(date){
 // Server emit message to Sender and reciver
 // here receive message just show in different UI
 socket.on('receive-message', (message) => {
-    updateRecentChat(message);
+  updateRecentChat(message);
 
   const loginChatUser = window.contactLoader.receiverId
 
   const sender = message.senderId?._id || message.senderId
   const receiver = message.receiverId?._id || message.receiverId
-  
-  
+
+
   // Ignore message not login user
   if (sender !== loginChatUser && receiver !== loginChatUser) return
-  
+
   const isSender = sender === userId
   console.log("🚀 ~ isSender:", isSender)
-  
-  
+
+
   console.log("🚀 ~ message Before renderContent:", message)
-  
+
 
   // If Message Sender is login user then senderUI Print in conversation area
   // else Message sender is click user then receiverUI Print
@@ -312,7 +344,7 @@ socket.on('receive-message', (message) => {
   const messageTime = formatTime(message.created_at);
 
   const messageHTML = isSender
-      ?`
+    ? `
         <div class="col-sm-12 message-main-sender">
           <div class="sender">
             <div class="message-text">${renderContent()}</div>
@@ -322,7 +354,7 @@ socket.on('receive-message', (message) => {
           </div>
         </div>
       `
-      : `
+    : `
         <div class="col-sm-12 message-main-receiver">
           <div class="receiver">
             <div class="message-text">${renderContent()}</div>
@@ -332,40 +364,40 @@ socket.on('receive-message', (message) => {
           </div>
         </div>
       `
-    const isNearBottom = messageContainer.scrollTop + messageContainer.clientHeight >= messageContainer.scrollHeight - 50;
+  const isNearBottom = messageContainer.scrollTop + messageContainer.clientHeight >= messageContainer.scrollHeight - 50;
 
-    const msgDateVal = new Date(message.created_at).toDateString();
-    
-    // Check the last inserted date divider
-    const dateDividers = chatsection.querySelectorAll('.date-divider');
-    let needsDivider = true;
-    if (dateDividers.length > 0) {
-        const lastDividerDate = dateDividers[dateDividers.length - 1].getAttribute('data-date');
-        if (lastDividerDate === msgDateVal) {
-            needsDivider = false;
-        }
+  const msgDateVal = new Date(message.created_at).toDateString();
+
+  // Check the last inserted date divider
+  const dateDividers = chatsection.querySelectorAll('.date-divider');
+  let needsDivider = true;
+  if (dateDividers.length > 0) {
+    const lastDividerDate = dateDividers[dateDividers.length - 1].getAttribute('data-date');
+    if (lastDividerDate === msgDateVal) {
+      needsDivider = false;
+    }
+  }
+
+  if (needsDivider) {
+    const date = new Date(message.created_at);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    let msgDateLabel = "";
+    if (date.toDateString() === today.toDateString()) {
+      msgDateLabel = "Today";
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      msgDateLabel = "Yesterday";
+    } else {
+      msgDateLabel = date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
     }
 
-    if (needsDivider) {
-        const date = new Date(message.created_at);
-        const today = new Date();
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-        
-        let msgDateLabel = "";
-        if (date.toDateString() === today.toDateString()) {
-            msgDateLabel = "Today";
-        } else if (date.toDateString() === yesterday.toDateString()) {
-            msgDateLabel = "Yesterday";
-        } else {
-            msgDateLabel = date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
-        }
-        
-        const dateDividerHTML = `<div class="date-divider" data-date="${msgDateVal}"><span>${msgDateLabel}</span></div>`;
-        chatsection.insertAdjacentHTML('beforeend', dateDividerHTML);
-    }
+    const dateDividerHTML = `<div class="date-divider" data-date="${msgDateVal}"><span>${msgDateLabel}</span></div>`;
+    chatsection.insertAdjacentHTML('beforeend', dateDividerHTML);
+  }
 
-    chatsection.insertAdjacentHTML('beforeend', messageHTML);
+  chatsection.insertAdjacentHTML('beforeend', messageHTML);
 
   if (isNearBottom) {
     messageContainer.scrollTop = messageContainer.scrollHeight;

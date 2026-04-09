@@ -131,6 +131,8 @@ class contactLoader {
 
             // "Find user row by ID" -> found instantly 
             div.setAttribute("data-user-id", user.id);
+            div.setAttribute("data-is-online", user.isOnline);
+            div.setAttribute("data-last-seen", user.lastSeen || '');
 
             const lastMessageTime = user.lastMessage?.created_at
                 ? formatSidebarTime(user.lastMessage.created_at)
@@ -186,7 +188,40 @@ class contactLoader {
         nameEl.textContent = user.name
 
         const imgEl = document.querySelector(".conversation .heading-avatar-icon img")
-        imgEl.src = user.profilePhoto    
+        imgEl.src = user.profilePhoto
+        
+        const statusEl = document.querySelector(".heading-online")
+
+        if (statusEl) {
+            const contactNode = document.querySelector(`[data-user-id="${user.id}"]`);
+            let isOnline = user.isOnline;
+            let lastSeen = user.lastSeen;
+            if (contactNode && contactNode.hasAttribute('data-is-online')) {
+                isOnline = contactNode.getAttribute('data-is-online') === 'true';
+            }
+            if (contactNode && contactNode.hasAttribute('data-last-seen')) {
+                const lsAttr = contactNode.getAttribute('data-last-seen');
+                if (lsAttr) lastSeen = lsAttr;
+            }
+            
+            if (isOnline) {
+                statusEl.textContent = "Online";
+                statusEl.style.color = "green";
+            } else {
+                let text = "Offline";
+                if (lastSeen) {
+                    const date = new Date(lastSeen);
+                    text = `Last seen at ${date.toLocaleString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true, day: 'numeric', month: 'short' })}`;
+                }
+                statusEl.textContent = text;
+                statusEl.style.color = "gray";
+            }
+        }
+
+        //  store current chat user
+        currentChatUserId = user.id
+
+        // const isOnline = document.
 
         const chatBox = document.getElementById("chatsection")
 

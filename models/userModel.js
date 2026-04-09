@@ -26,6 +26,14 @@ const userSchema = mongoose.Schema({
         type : String,
         required : true
     },
+    isOnline: {
+        type: Boolean,
+        default: false
+    },
+    lastSeen: {
+        type: Date,
+        default: Date.now
+    },
     email_verified : {
         type : Boolean,
         default : false,

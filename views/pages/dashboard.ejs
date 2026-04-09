@@ -213,7 +213,7 @@
         </div>
 
         <div class="col-sm-7 col-xs-6 heading-name">
-          <a class="heading-name-meta">Ankit Jain</a>
+          <p class="heading-name-meta">Ankit Jain</p>
           <span class="heading-online">Online</span>
         </div>
 
@@ -289,39 +289,42 @@
 
 
 
-   
-
-
+        
+        
+        
+        <!-- Reply Box -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
         <!-- Reply Box -->
         <div class="row reply">
           <div class="col-sm-1 col-xs-1 reply-emojis">
-            <i class="fa fa-smile-o fa-2x"></i>
+            <i class="fa-regular fa-face-smile fa-2x"></i>
           </div>
-          <div class="col-sm-9 col-xs-9 reply-main">
-            <textarea class="form-control" rows="1" id="messageInput" placeholder="Message"></textarea>
-          </div>
-            <!-- <div class="col-sm-1 col-xs-1 reply-recording">
-              <i class="fa fa-microphone fa-2x" aria-hidden="true"></i>
-            </div> -->
 
           <div class="col-sm-1 col-xs-1 reply-recording">
             <label for="fileInput" style="cursor:pointer;">
-              <i class="fa fa-paperclip fa-2x"></i>
+              <i class="fa-solid fa-paperclip fa-2x"></i>
             </label>
             <input type="file" id="fileInput" style="display:none;">
           </div>
-
-
           
-          <div class="col-sm-1 col-xs-1 reply-send">
-              <i id="sendBtn" class="fa fa-send fa-2x" aria-hidden="true"></i>
+          <div class="col-sm-9 col-xs-9 reply-main">
+            <textarea class="form-control" rows="1" id="messageInput" placeholder="Message"></textarea>
           </div>
 
-
-      
+          <div class="col-sm-1 col-xs-1 reply-send" id="sendBtn">
+            <i class="fa-solid fa-paper-plane fa-2x"></i>
+          </div>
         </div>
+
         <!-- Reply Box End -->
+
+
+
+
+
+
+
       </div>
       <!-- Conversation End -->
     </div>

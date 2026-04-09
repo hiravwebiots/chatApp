@@ -171,8 +171,8 @@ const readMessage = async(req, res) => {
         // ])
 
         const messages = await messageModel.find()
-                        .populate('senderId', ['profilePhoto', 'name', 'email', 'phone'])
-                        .populate('receiverId', ['profilePhoto', 'name', 'email', 'phone'])
+                        .populate('senderId', ['profilePhoto', 'name', 'email', 'phone', 'isOnline', 'lastSeen'])
+                        .populate('receiverId', ['profilePhoto', 'name', 'email', 'phone', 'isOnline', 'lastSeen'])
 
 
         const formatData = messages.map((msg) => {
@@ -270,8 +270,8 @@ const readMessagePersonalChat = async (req, res) => {
                 { senderId : userId, receiverId : loginUserId }
             ]
         })
-        .populate('senderId', ['profilePhoto', 'name', 'email', 'phone'])
-        .populate('receiverId', ['profilePhoto', 'name', 'email', 'phone'])
+        .populate('senderId', ['profilePhoto', 'name', 'email', 'phone', 'isOnline', 'lastSeen'])
+        .populate('receiverId', ['profilePhoto', 'name', 'email', 'phone', 'isOnline', 'lastSeen'])
         .sort({ created_at : 1 }) // 1 old → new  || -1 new → old
                 
         const formatData = messages.map((msg) => {
@@ -322,8 +322,8 @@ const getRecentChats = async (req, res) => {
                 { receiverId: loginUserId }
             ]
         })
-        .populate('senderId', ['profilePhoto', 'name', 'email'])
-        .populate('receiverId', ['profilePhoto', 'name', 'email'])
+        .populate('senderId', ['profilePhoto', 'name', 'email', 'isOnline', 'lastSeen'])
+        .populate('receiverId', ['profilePhoto', 'name', 'email', 'isOnline', 'lastSeen'])
         .sort({ created_at: -1 }); // latest first
 
         if (!messages.length) {
@@ -347,6 +347,8 @@ const getRecentChats = async (req, res) => {
                         name: otherUser.name,
                         email: otherUser.email,
                         profilePhoto: otherUser.profilePhoto,
+                        isOnline: otherUser.isOnline,
+                        lastSeen: otherUser.lastSeen,
                         lastMessage: {
                             content: msg.content,
                             messageType: msg.messageType,

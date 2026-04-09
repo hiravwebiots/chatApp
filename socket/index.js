@@ -7,8 +7,8 @@ const initSocket = (io) => {
 
   io.on('connection', async(socket) => {
     console.log('user connected', socket.id);
-        
-    // create connection -> join room
+
+    // create connection -> join room ---- online user
     // user login then create this room
     socket.on('join-room', async (userId) => {
         console.log('Sender Join room');
@@ -47,6 +47,15 @@ const initSocket = (io) => {
             socket.join(userId)
             console.log(`user ${userId} joined Personal room`); 
 
+            await userModel.findByIdAndUpdate(userId, { isOnline: true });
+
+
+            // Online event
+            io.emit('user-status', {
+                userId,
+                isOnline : true
+            })
+            console.log('user online');
 
         } catch(err){
             console.error('Error While join room', err)
@@ -99,6 +108,40 @@ const initSocket = (io) => {
             candidate,
             senderId : socket.userId
         })
+    })
+
+    // Disconnect
+    socket.on('disconnect', async () => {
+        console.log('user disconnected', socket.id);
+
+        const userId = socketUsers.get(socket.id)
+        if(!userId) return
+
+        const sockets = userSockets.get(userId)
+
+        if(sockets){
+            sockets.delete(socket.id)
+
+            // offline events
+            if(sockets.size === 0){
+                userSockets.delete(userId)
+
+                const lastSeen = new Date();
+                await userModel.findByIdAndUpdate(userId, { 
+                    isOnline: false, 
+                    lastSeen 
+                });
+
+                io.emit('user-status', {
+                    userId,
+                    isOnline : false,
+                    lastSeen
+                })
+                console.log('user offline');
+            }
+        }
+
+        socketUsers.delete(socket.id)
     })
 
   })
